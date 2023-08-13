@@ -20,3 +20,10 @@ typedef const char *str;
 
 /// Discards the given input.
 #define discard(it) (void)(it)
+
+//_________________________________________________
+/// Header Only | Define this in only one file.  //
+#if defined cdk_std //
+//_________________________________//
+#include "./std.c"
+#endif // cdk_std

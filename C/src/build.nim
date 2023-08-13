@@ -13,7 +13,7 @@ confy.cfg.tab     = "   : "   #|
 confy.cfg.quiet   = off       #|
 confy.cfg.verbose = off       #|
 #_____________________________#|
-let forceClean    = off
+let forceClean    = on
 
 
 #_______________________________________
@@ -47,8 +47,8 @@ template glfw *() :void=
 #___________________
 let srcCore = @[ srcDir/"entry.c" ]
 let srcCdk  = @[
-  # cdkDir/"std.c",
-  # cdkDir/"opts.c",
+  cdkDir/"std.c",
+  cdkDir/"opts.c",
   cdkDir/"input.c",
   elemDir/"window.c",
   ] # << srcCdk

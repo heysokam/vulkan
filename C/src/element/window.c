@@ -9,20 +9,24 @@
 cWindow w_init(w_init_args in);
 
 /// Error callback for GLFW
-void w_error(i32 code, const char *descr);
+void w_error(i32 code, const char *descr) {
+  discard(code);
+  discard(descr);
+}
 
 void w_resize(GLFWwindow *window, int W, int H) {
   discard(window);
   discard(W);
   discard(H);
-};
+}
 /// Initializes and returns a window.
 cWindow w_init(w_init_args in) {
   glfwInit();
   glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
   glfwWindowHint(GLFW_RESIZABLE, in.resize);
   cWindow result = {
-      .ct = glfwCreateWindow(in.width, in.height, in.title, NULL, NULL),
+      .ct =
+          glfwCreateWindow((int)in.width, (int)in.height, in.title, NULL, NULL),
       .width = in.width,
       .height = in.height,
       .title = in.title,
@@ -33,17 +37,19 @@ cWindow w_init(w_init_args in) {
   glfwSetMouseButtonCallback(result.ct, in.mouseBtn);
   glfwSetScrollCallback(result.ct, in.mouseScroll);
   return result;
-};
+}
 
 /// Gets the current size of the given window, and stores it in its .size field.
-void w_updateSize(cWindow win);
+void w_updateSize(cWindow win) { discard(win); }
 
-void w_update(cWindow win) { glfwPollEvents(); }
+void w_update(cWindow win) {
+  discard(win);
+  glfwPollEvents();
+}
 
-bool w_close(cWindow w) { return glfwWindowShouldClose(w.ct); };
+bool w_close(cWindow w) { return glfwWindowShouldClose(w.ct); }
 
 void w_term(cWindow w) {
   glfwDestroyWindow(w.ct);
   glfwTerminate();
-};
-
+}

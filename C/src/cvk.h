@@ -6,6 +6,7 @@
 /// Header Only | Define this in only one file.  //
 #if defined cvk_core //
 #define cdk_std
+#define cdk_opts
 #define cdk_input
 #define cvk_window
 #define cvk_vulkan
@@ -13,5 +14,6 @@
 #endif // cvk_core
 
 #include "./cdk/std.h"
+#include "./cdk/opts.h"
 #include "./cdk/input.h"
 #include "./elements.h"

@@ -3,14 +3,12 @@
 //:__________________________________________________________________
 #pragma once
 #include "./std.h"
-#include <GLFW/glfw3.h>
 
-/// GLFW Keyboard Input Callback
-void i_key(GLFWwindow* win, int key, int code, int action, int mods);
+void opt_parse(const int argc, const char *argv[]);
 
 //_________________________________________________
 /// Header Only | Define this in only one file.  //
-#if defined cdk_input //
+#if defined cdk_opts //
 //_________________________________//
-#include "./input.c"
-#endif // cdk_input
+#include "./opts.c"
+#endif // cdk_opts

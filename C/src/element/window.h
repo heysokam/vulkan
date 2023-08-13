@@ -1,6 +1,7 @@
 //:__________________________________________________________________
 //  cvk  |  Copyright (C) Ivan Mar (sOkam!)  |  GNU GPLv3 or later  |
 //:__________________________________________________________________
+#pragma once
 // External dependencies
 #include "../cdk/std.h"
 #include <GLFW/glfw3.h>
