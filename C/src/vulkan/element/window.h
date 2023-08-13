@@ -3,8 +3,9 @@
 //:__________________________________________________________________
 #pragma once
 // External dependencies
-#include "../cdk/std.h"
 #include <GLFW/glfw3.h>
+// cdk dependencies
+#include "../../cdk/std.h"
 
 /// Contains the window context and its properties.
 typedef struct cWindow_s {

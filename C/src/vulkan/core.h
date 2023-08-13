@@ -1,19 +1,17 @@
 //:__________________________________________________________________
 //  cvk  |  Copyright (C) Ivan Mar (sOkam!)  |  GNU GPLv3 or later  |
 //:__________________________________________________________________
+#pragma once
+// External dependencies
+#include <vulkan/vulkan.h>
+// cdk dependencies
+#include "../cdk/std.h"
+// cvk dependencies
+#include "./elements.h"
 
 //_________________________________________________
 /// Header Only | Define this in only one file.  //
-#if defined cvk_core //
-#define cdk_std
-#define cdk_opts
-#define cdk_input
-#define cvk_window
-#define cvk_vulkan
+#if defined cvk_vulkan //
 //_________________________________//
-#endif // cvk_core
-
-#include "./cdk/std.h"
-#include "./cdk/opts.h"
-#include "./cdk/input.h"
-#include "./vulkan/core.h"
+#include "./vulkan.c"
+#endif // cvk_vulkan

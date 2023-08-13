@@ -4,7 +4,6 @@
 #if !defined cvk_window
 #include "./window.h"
 #endif
-#include "../cdk/input.h"
 
 cWindow w_init(w_init_args in);
 

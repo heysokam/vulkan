@@ -21,7 +21,8 @@ let forceClean    = on
 #___________________
 let libDir  = srcDir/"lib"
 let cdkDir  = srcDir/"cdk"
-let elemDir = srcDir/"element"
+let vkDir   = srcDir/"vulkan"
+let elemDir = vkDir/"element"
 
 
 #_______________________________________
@@ -50,6 +51,7 @@ let srcCdk  = @[
   cdkDir/"std.c",
   cdkDir/"opts.c",
   cdkDir/"input.c",
+  vkDir/"core.c",
   elemDir/"window.c",
   ] # << srcCdk
 let cdkLibs = @["-lvulkan"]
