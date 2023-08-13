@@ -1,5 +1,17 @@
-//:___________________________________________________
-//  cvk  |  Copyright (C) Ivan Mar (sOkam!)  |  MIT  |
-//:___________________________________________________
+//:__________________________________________________________________
+//  cvk  |  Copyright (C) Ivan Mar (sOkam!)  |  GNU GPLv3 or later  |
+//:__________________________________________________________________
 
+//_________________________________________________
+/// Header Only | Define this in only one file.  //
+#if defined cvk_core //
+#define cdk_std
+#define cdk_input
+#define cvk_window
+#define cvk_vulkan
+//_________________________________//
+#endif // cvk_core
+
+#include "./cdk/std.h"
+#include "./cdk/input.h"
 #include "./elements.h"

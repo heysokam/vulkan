@@ -1,28 +1,49 @@
+//:___________________________________________________
+//  cvk  |  Copyright (C) Ivan Mar (sOkam!)  |  MIT  |
+//:___________________________________________________
+#if !defined cvk_window
+#include "./window.h"
+#endif
+#include "../cdk/input.h"
 
+cWindow w_init(w_init_args in);
 
+/// Error callback for GLFW
+void w_error(i32 code, const char *descr);
 
+void w_resize(GLFWwindow *window, int W, int H) {
+  discard(window);
+  discard(W);
+  discard(H);
+};
+/// Initializes and returns a window.
+cWindow w_init(w_init_args in) {
+  glfwInit();
+  glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+  glfwWindowHint(GLFW_RESIZABLE, in.resize);
+  cWindow result = {
+      .ct = glfwCreateWindow(in.width, in.height, in.title, NULL, NULL),
+      .width = in.width,
+      .height = in.height,
+      .title = in.title,
+  };
+  glfwSetFramebufferSizeCallback(result.ct, in.resizeCB);
+  glfwSetKeyCallback(result.ct, in.key);
+  glfwSetCursorPosCallback(result.ct, in.mousePos);
+  glfwSetMouseButtonCallback(result.ct, in.mouseBtn);
+  glfwSetScrollCallback(result.ct, in.mouseScroll);
+  return result;
+};
 
+/// Gets the current size of the given window, and stores it in its .size field.
+void w_updateSize(cWindow win);
 
-// #________________________________________________
-// # window.nim
-// #__________________
-// proc key (win :glfw.Window; key, code, action, mods :cint) :void {.cdecl.}=
-//   ## GLFW Keyboard Input Callback
-//   if (key == glfw.KEY_ESCAPE and action == glfw.PRESS):
-//     glfw.setWindowShouldClose(win, true.cint)
-//   if action == glfw.PRESS: echo "Pressed key | id:",$key, " code:",$code
-// #__________________
-// proc close  (win :glfw.Window) :bool=  glfw.windowShouldClose(win).bool
-//   ## Returns true when the GLFW window has been marked to be closed.
-// proc term   (win :glfw.Window) :void=  glfw.destroyWindow(win); glfw.terminate()
-//   ## Terminates the GLFW window.
-// proc update (win :glfw.Window) :void=  glfw.pollEvents()
-//   ## Updates the window. Needs to be called each frame.
-// #__________________
-// proc init () :glfw.Window=
-//   ## Initializes the window with GLFW.
-//   doAssert glfw.init().bool, "Failed to Initialize GLFW"
-//   glfw.windowHint(glfw.CLIENT_API, glfw.NO_API)
-//   result = glfw.createWindow(960, 540, "nglfw | Hello Window NoAPI", nil, nil)
-//   doAssert result != nil, "Failed to create GLFW window"
-//   discard glfw.setKeyCallback(result, key)
+void w_update(cWindow win) { glfwPollEvents(); }
+
+bool w_close(cWindow w) { return glfwWindowShouldClose(w.ct); };
+
+void w_term(cWindow w) {
+  glfwDestroyWindow(w.ct);
+  glfwTerminate();
+};
+
