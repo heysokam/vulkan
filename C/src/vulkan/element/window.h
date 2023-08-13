@@ -16,7 +16,7 @@ typedef struct cWindow_s {
 } cWindow;
 
 /// Function input arguments
-typedef struct args_w_init_s {
+typedef struct w_init_args_s {
   // Window config
   str title;
   u32 width;

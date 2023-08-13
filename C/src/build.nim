@@ -44,19 +44,14 @@ template glfw *() :void=
   log "Finished building GLFW."
 
 #_______________________________________
-# Cendk and Entry Point
+# cdk and Entry Point
 #___________________
-let srcCore = @[ srcDir/"entry.c" ]
-let srcCdk  = @[
-  cdkDir/"std.c",
-  cdkDir/"opts.c",
-  cdkDir/"input.c",
-  vkDir/"core.c",
-  elemDir/"window.c",
-  ] # << srcCdk
+let srcCore = srcDir.glob
+let srcVk   = vkDir.glob & elemDir.glob
+let srcCdk  = cdkDir.glob
 let cdkLibs = @["-lvulkan"]
 var bin = Program.new(
-  src   = srcCore & srcCdk,
+  src   = srcCore & srcCdk & srcVk,
   trg   = "currentExample",
   flags = allC & glfwLibs.toLD & cdkLibs.toLD,
 )

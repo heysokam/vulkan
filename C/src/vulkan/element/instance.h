@@ -2,5 +2,13 @@
 //  cvk  |  Copyright (C) Ivan Mar (sOkam!)  |  GNU GPLv3 or later  |
 //:__________________________________________________________________
 #pragma once
-#include "./element/window.h"
-#include "./element/instance.h"
+#include "./base.h"
+
+typedef struct cvk_instance_create_args_s {
+  str appName;
+  u32 appVers;
+  str engineName;
+  u32 engineVers;
+} cvk_instance_create_args;
+
+VkInstance cvk_instance_create(cvk_instance_create_args in);

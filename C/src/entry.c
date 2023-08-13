@@ -1,18 +1,18 @@
 //:__________________________________________________________________
 //  cvk  |  Copyright (C) Ivan Mar (sOkam!)  |  GNU GPLv3 or later  |
 //:__________________________________________________________________
-// Hello Window example                           |
-// Creates a window with GLFW and keeps it open.  |
-// It can be closed by pressing the Escape key.   |
-//________________________________________________|
+// Hello Vulkan Context                                   |
+// Creates a window with GLFW,                            |
+// and creates the most minimal vulkan context possible.  |
+//________________________________________________________|
 #include "./cvk.h"
 
 #include <stdio.h>
 int main(const int argc, const char *argv[]) {
   printf("hello world\n");
   opt_parse(argc, argv);
-  cWindow w = w_init((w_init_args){
-      .title = "Hello Window",
+  Vulkan vk = cvk_init((cvk_init_args){
+      .title = "c*vk | Hello Vulkan",
       .width = 960,
       .height = 540,
       .resize = false,
@@ -22,10 +22,14 @@ int main(const int argc, const char *argv[]) {
       .mousePos = NULL,
       .mouseBtn = NULL,
       .mouseScroll = NULL,
+      .appName = "c*vk | Application",
+      .appVers = cdk_makeVersion(0, 0, 0),
+      .engineName = "c*vk | Engine",
+      .engineVers = cdk_makeVersion(0, 0, 0),
   });
-  while (!w_close(w)) {
-    w_update(w);
+  while (!cvk_close(&vk)) {
+    cvk_update(&vk);
   }
-  w_term(w);
+  cvk_term(&vk);
   return 0;
 }

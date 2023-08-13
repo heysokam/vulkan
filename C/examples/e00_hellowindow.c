@@ -12,7 +12,7 @@ int main(const int argc, const char *argv[]) {
   printf("hello world\n");
   opt_parse(argc, argv);
   cWindow w = w_init((w_init_args){
-      .title = "Hello Window",
+      .title = "c*vk | Hello Window",
       .width = 960,
       .height = 540,
       .resize = false,

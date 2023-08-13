@@ -16,4 +16,5 @@
 #include "./cdk/std.h"
 #include "./cdk/opts.h"
 #include "./cdk/input.h"
+#include "./cfg.h"
 #include "./vulkan/core.h"

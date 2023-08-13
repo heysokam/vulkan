@@ -21,6 +21,9 @@ typedef const char *str;
 /// Discards the given input.
 #define discard(it) (void)(it)
 
+/// Generates a version number, in Vulkan style
+u32 cdk_makeVersion(const u32 M, const u32 m, const u32 p);
+
 //_________________________________________________
 /// Header Only | Define this in only one file.  //
 #if defined cdk_std //
