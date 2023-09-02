@@ -12,6 +12,7 @@ confy.cfg.prefix  = "cvk: "   #|
 confy.cfg.tab     = "   : "   #|
 confy.cfg.quiet   = off       #|
 confy.cfg.verbose = off       #|
+confy.cfg.zigSystemBin = on   #|
 #_____________________________#|
 let forceClean    = on
 
@@ -58,4 +59,4 @@ var bin = Program.new(
 
 when isMainModule:
   glfw()
-  bin.build( force=forceClean )
+  bin.build( run=on, force=forceClean )
