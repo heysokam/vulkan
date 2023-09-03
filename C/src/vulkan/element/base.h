@@ -8,6 +8,8 @@
 #include <vulkan/vulkan.h>
 // cdk dependencies
 #include "../../cdk/std.h"
+#include "../../cdk/mem.h"
 // cvk dependencies
-#include "../../cfg.h"
+#include "../cfg.h"
+#include "../max.h"
 

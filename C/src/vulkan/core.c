@@ -4,7 +4,6 @@
 #if !defined cvk_vulkan
 #  include "./core.h"
 #endif
-#include "../cdk/sys.h"
 
 Vulkan cvk_init(cvk_init_args in) {
   Vulkan result = {

@@ -9,7 +9,9 @@
 
 #include <stdio.h>
 int main(const int argc, const char* argv[]) {
+  #if debug
   printf("hello world\n");
+  #endif
   opt_parse(argc, argv);
   System sys = csys_init((csys_init_args) {
     // clang-format off

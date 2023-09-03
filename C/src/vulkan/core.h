@@ -7,6 +7,7 @@
 // cdk dependencies
 #include "../cdk/std.h"
 // cvk dependencies
+#include "./cfg.h"
 #include "./elements.h"
 
 typedef struct args_cvk_init_s {
@@ -25,8 +26,6 @@ typedef struct Vulkan_s {
 Vulkan cvk_init(cvk_init_args in);
 /// Runs the logic required for rendering one frame
 void cvk_update(Vulkan* vk);
-/// Returns true if the renderer has been marked for closing.
-bool cvk_close(Vulkan* vk);
 /// Terminates the renderer.
 void cvk_term(Vulkan* vk);
 

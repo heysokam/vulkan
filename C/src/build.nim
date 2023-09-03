@@ -15,6 +15,7 @@ confy.cfg.verbose = off       #|
 confy.cfg.zigSystemBin = on   #|
 #_____________________________#|
 let forceClean    = on
+const debug = not (defined(release) or defined(danger)) or on
 
 
 #_______________________________________
@@ -47,14 +48,15 @@ template glfw *() :void=
 #_______________________________________
 # cdk and Entry Point
 #___________________
-let srcCore = srcDir.glob
-let srcVk   = vkDir.glob & elemDir.glob
-let srcCdk  = cdkDir.glob
-let cdkLibs = @["-lvulkan"]
+let srcCore  = srcDir.glob
+let srcVk    = vkDir.glob & elemDir.glob
+let srcCdk   = cdkDir.glob
+let cdkLibs  = @["-lvulkan"]
+let cdkDebug = when debug: @["-DDEBUG"] else: @[""]
 var bin = Program.new(
   src   = srcCore & srcCdk & srcVk,
   trg   = "currentExample",
-  flags = allC & glfwLibs.toLD & cdkLibs.toLD,
+  flags = allC & glfwLibs.toLD & cdkLibs.toLD & cdkDebug.toCC,
 )
 
 when isMainModule:

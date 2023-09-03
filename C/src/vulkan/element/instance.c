@@ -11,15 +11,19 @@
 
 // Mac Compatibility
 #if defined(macosx)
-#define FlagsInstance VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR
+#  define FlagsInstance VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR
 #else
-#define FlagsInstance 0
+#  define FlagsInstance 0
 #endif
+
 
 VkInstance cvk_instance_create(cvk_instance_create_args in) {
   VkInstance result;
-  u32        extCount = 0;
-  str*       extNames = glfwGetRequiredInstanceExtensions(&extCount);
+  // Get required extensions
+  u32   extCount = 0;
+  cstr* extNames = glfwGetRequiredInstanceExtensions(&extCount);
+  if (!extNames) fail(1, "Couldn't find any Vulkan Extensions. Vk is not usable (probably not installed)");
+  // Create the instance
   // clang-format off
   VkResult code = vkCreateInstance(&(VkInstanceCreateInfo){
     .sType                   = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
@@ -34,13 +38,14 @@ VkInstance cvk_instance_create(cvk_instance_create_args in) {
       .engineVersion         = in.engineVers,
       .apiVersion            = Cfg_ApiVersion,
        }, // << pApplicationInfo
-    .enabledLayerCount       = 0,
-    .ppEnabledLayerNames     = NULL,
+    .enabledLayerCount       = Max_VulkanLayers,
+    .ppEnabledLayerNames     = validationLayers,
     .enabledExtensionCount   = extCount,
     .ppEnabledExtensionNames = extNames,
      },
      NULL, &result);
   // clang-format on
-  chk(code, "Instance Creation"); /* ERROR HERE */
+  if (code != VK_SUCCESS) fail(code, "Failed to create Vulkan Instance");
+  // chk(code, "Instance Creation"); /* ERROR HERE */
   return result;
 }
