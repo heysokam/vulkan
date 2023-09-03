@@ -10,19 +10,6 @@
 #include "./elements.h"
 
 typedef struct args_cvk_init_s {
-  // Window config
-  str title;
-  u32 width;
-  u32 height;
-  bool resize;
-  // General callbacks
-  GLFWframebuffersizefun resizeCB;
-  GLFWerrorfun error;
-  // Input callbacks
-  GLFWkeyfun key;
-  GLFWcursorposfun mousePos;
-  GLFWmousebuttonfun mouseBtn;
-  GLFWscrollfun mouseScroll;
   // Application Information
   str appName;
   u32 appVers;
@@ -31,7 +18,6 @@ typedef struct args_cvk_init_s {
 } cvk_init_args;
 
 typedef struct Vulkan_s {
-  cWindow win;
   VkInstance instance;
 } Vulkan;
 
