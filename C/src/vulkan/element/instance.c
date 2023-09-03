@@ -9,15 +9,22 @@
 // TODO: Error management
 #define chk(a, b) discard(a)
 
+// Mac Compatibility
+#if defined(macosx)
+#define FlagsInstance VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR
+#else
+#define FlagsInstance 0
+#endif
+
 VkInstance cvk_instance_create(cvk_instance_create_args in) {
   VkInstance result;
-  u32 extensionCount = 0;
-  str *extensions = glfwGetRequiredInstanceExtensions(&extensionCount);
+  u32        extCount = 0;
+  str*       extNames = glfwGetRequiredInstanceExtensions(&extCount);
   // clang-format off
   VkResult code = vkCreateInstance(&(VkInstanceCreateInfo){
     .sType                   = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
     .pNext                   = NULL,
-    .flags                   = 0,
+    .flags                   = FlagsInstance,
     .pApplicationInfo        = &(VkApplicationInfo){
       .sType                 = VK_STRUCTURE_TYPE_APPLICATION_INFO,
       .pNext                 = NULL,
@@ -29,10 +36,11 @@ VkInstance cvk_instance_create(cvk_instance_create_args in) {
        }, // << pApplicationInfo
     .enabledLayerCount       = 0,
     .ppEnabledLayerNames     = NULL,
-    .enabledExtensionCount   = extensionCount,
-    .ppEnabledExtensionNames = extensions,
+    .enabledExtensionCount   = extCount,
+    .ppEnabledExtensionNames = extNames,
      },
-     NULL, &result);             // clang-format on
+     NULL, &result);
+  // clang-format on
   chk(code, "Instance Creation"); /* ERROR HERE */
   return result;
 }

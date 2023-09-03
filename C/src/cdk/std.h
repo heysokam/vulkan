@@ -31,6 +31,17 @@ u32 cdk_makeVersion(const u32 M, const u32 m, const u32 p);
 /// Creates a new Handle object
 Handle newHandle(void);
 
+/// Systems aliasing
+#if defined __WIN32
+#define windows
+#endif
+#if defined __linux__
+// #define linux
+#endif
+#if defined __APPLE__
+#define macosx
+#endif
+
 //_________________________________________________
 /// Header Only | Define this in only one file.  //
 #if defined cdk_std  //
