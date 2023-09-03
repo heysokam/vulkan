@@ -16,9 +16,3 @@
 #define Cfg_validate false
 #endif
 
-#if debug
-extern cstr validationLayers[Max_VulkanLayers];
-#else
-extern cstr const* validationLayers;
-#endif
-

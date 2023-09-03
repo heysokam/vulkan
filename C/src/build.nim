@@ -26,7 +26,6 @@ let cdkDir  = srcDir/"cdk"
 let vkDir   = srcDir/"vulkan"
 let elemDir = vkDir/"element"
 
-
 #_______________________________________
 # glfw Static
 #___________________

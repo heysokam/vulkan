@@ -3,6 +3,7 @@
 //:__________________________________________________________________
 #pragma once
 #include "./base.h"
+#include "./validation.h"
 
 typedef struct cvk_instance_create_args_s {
   str appName;
