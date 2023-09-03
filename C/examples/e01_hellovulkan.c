@@ -5,7 +5,7 @@
 // Creates a window with GLFW,                            |
 // and creates the most minimal vulkan context possible.  |
 //________________________________________________________|
-#include "./cvk.h"
+#include "../src/cvk.h"
 
 #include <stdio.h>
 int main(const int argc, const char *argv[]) {
