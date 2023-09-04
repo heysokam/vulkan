@@ -36,9 +36,13 @@ Handle newHandle(void);
 //__________________________________________________________
 // Arrays
 //______________________________________
+#include <stddef.h>
 
 /// Returns the size of the input array
 #define arr_len(arr) (sizeof(arr)) / (sizeof(arr[0]))
+/// Combines the two given cstr arrays into a single one, and returns it.
+/// Allocates the memory that stores the information.
+cstr* arr_cstr_merge(cstr* one, size_t len1, cstr* two, size_t len2);
 
 // #define arr_merge(a1,s1, a2,s2)
 //_____________________________
@@ -59,8 +63,10 @@ Handle newHandle(void);
 // Strings: cstr
 //______________________________________
 
+#include "./mem.h"
 /// Compares two strings and returns a boolean of whether or not they are the same
 #define str_equal(a,b) (bool)(strcmp((a),(b)) == 0)
+cstr* arr_cstr_merge(cstr* a, size_t len_a, cstr* b, size_t len_b);
 
 
 #include <stdio.h>

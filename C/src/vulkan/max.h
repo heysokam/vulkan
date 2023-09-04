@@ -9,3 +9,5 @@
 #else
 #define Max_VulkanLayers 0
 #endif
+
+#define Max_VulkanExtensions 1

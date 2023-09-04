@@ -9,7 +9,7 @@ from confy/cfg  as cfg import nil
 #___________________
 # Package
 packageName   = "cvk"
-version       = "0.0.3"
+version       = "0.0.4"
 author        = "sOkam"
 description   = "c*vk | Ergonomic C Vulkan API"
 license       = "GPL-3.0-or-later"

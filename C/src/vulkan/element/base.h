@@ -13,6 +13,9 @@
 #include "../cfg.h"
 #include "../max.h"
 
+// TODO: Error management
+#define chk(a, b) discard(a)
+
 /// Value added to all Component IDs, to avoid conflict with most known error codes
 #define ComponentOffset 100
 

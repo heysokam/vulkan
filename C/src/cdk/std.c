@@ -20,3 +20,13 @@ void fail(i32 code, cstr msg) {
   err(code, msg);
   exit(code);
 }
+
+cstr* arr_cstr_merge(cstr* one, size_t len1, cstr* two, size_t len2) { // clang-format off
+  size_t len    = len1 + len2;
+  str*   result = (str*)alloc(len, sizeof(*result));
+  // to start pos  from    bytes size
+  cpy(result,      one, len1 * sizeof(*one));
+  cpy(result+len1, two, len2 * sizeof(*two));
+  return (cstr*)result;
+} // clang-format on
+
