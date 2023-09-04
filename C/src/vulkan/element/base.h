@@ -13,3 +13,14 @@
 #include "../cfg.h"
 #include "../max.h"
 
+/// Value added to all Component IDs, to avoid conflict with most known error codes
+#define ComponentOffset 100
+
+/// ID of each c*vk component. Used for error codes, and other identification handles.
+typedef enum Component_ID {
+  Validate = ComponentOffset + 1,
+  Instance,
+  Device,
+  Component_Force32 = 0x7FFFFFFF,
+} Component;
+

@@ -10,7 +10,7 @@
 #include <stdio.h>
 int main(const int argc, const char* argv[]) {
   #if debug
-  printf("hello world\n");
+  printf("hello world with -DDEBUG\n");
   #endif
   opt_parse(argc, argv);
   System sys = csys_init((csys_init_args) {

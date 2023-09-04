@@ -39,12 +39,16 @@ Handle newHandle(void);
 
 /// Returns the size of the input array
 #define arr_len(arr) (sizeof(arr)) / (sizeof(arr[0]))
+
+// #define arr_merge(a1,s1, a2,s2)
 //_____________________________
 // TODO: Array Concatenation  |
 // size_t array1Size = 42;
 // T* array1 = malloc(sizeof(T) * array1Size);
 // size_t array2Size = 69;
 // T* array2 = malloc(sizeof(T) * array2Size);
+//
+//
 // T* array3 = malloc(sizeof(T) * (array1Size + array2Size));
 // memcpy(array3, array1, sizeof(T) * array1Size);
 // memcpy(array3 + array1Size, array2, sizeof(T) * array2Size);

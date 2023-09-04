@@ -11,4 +11,4 @@ extern cstr const* validationLayers;
 #endif
 
 
-bool cvk_validate_chkSupport(void);
+void cvk_validate_chkSupport(void);

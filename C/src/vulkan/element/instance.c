@@ -16,15 +16,27 @@
 #  define FlagsInstance 0
 #endif
 
+cstr* cvk_instance_getExtensions(u32* count) {
+  // Get system Extensions with GLFW
+  cstr* required = glfwGetRequiredInstanceExtensions(count);
+  if (!required) fail(Instance, "Couldn't find any Vulkan Extensions. Vk is not usable (probably not installed)");
+  // Get our desired extensions
+  *count += arr_len(extensions);
+  cstr* result = (cstr*)alloc(*count, sizeof(cstr));
+  for (u32 id; id < *count; id++) {
+    result[id]
+  }
+  return result;
+}
 
 VkInstance cvk_instance_create(cvk_instance_create_args in) {
-  VkInstance result;
+  // Check if validation layers are supported (does nothing on release mode).
+  cvk_validate_chkSupport();
   // Get required extensions
   u32   extCount = 0;
-  cstr* extNames = glfwGetRequiredInstanceExtensions(&extCount);
-  if (!extNames) fail(1, "Couldn't find any Vulkan Extensions. Vk is not usable (probably not installed)");
+  cstr* extNames = cvk_instance_getExtensions(&extCount);
   // Create the instance
-  // clang-format off
+  VkInstance result;  // clang-format off
   VkResult code = vkCreateInstance(&(VkInstanceCreateInfo){
     .sType                   = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
     .pNext                   = NULL,
@@ -45,7 +57,7 @@ VkInstance cvk_instance_create(cvk_instance_create_args in) {
      },
      NULL, &result);
   // clang-format on
-  if (code != VK_SUCCESS) fail(code, "Failed to create Vulkan Instance");
+  if (code != VK_SUCCESS) fail(Instance, "Failed to create Vulkan Instance");
   // chk(code, "Instance Creation"); /* ERROR HERE */
   return result;
 }
