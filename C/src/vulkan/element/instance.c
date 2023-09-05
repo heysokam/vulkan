@@ -3,7 +3,7 @@
 //:__________________________________________________________________
 // External dependencies
 #include <GLFW/glfw3.h>
-// cvk dependencies
+// c*vk dependencies
 #include "./instance.h"
 
 

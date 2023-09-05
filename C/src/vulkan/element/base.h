@@ -6,10 +6,10 @@
 #pragma once
 // External dependencies
 #include <vulkan/vulkan.h>
-// cdk dependencies
+// c*dk dependencies
 #include "../../cdk/std.h"
 #include "../../cdk/mem.h"
-// cvk dependencies
+// c*vk dependencies
 #include "../alias.h"
 #include "../cfg.h"
 #include "../max.h"
