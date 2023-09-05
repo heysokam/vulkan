@@ -1,5 +1,5 @@
 //:__________________________________________________________________
-//  cvk  |  Copyright (C) Ivan Mar (sOkam!)  |  GNU GPLv3 or later  |
+//  cvk  |  Copyright (C) Ivan Mar (sOkam!)  |  GNU GPLv3 or later  :
 //:__________________________________________________________________
 // Base module : Imported by all files in this folder.  |
 //______________________________________________________|
@@ -10,6 +10,7 @@
 #include "../../cdk/std.h"
 #include "../../cdk/mem.h"
 // cvk dependencies
+#include "../alias.h"
 #include "../cfg.h"
 #include "../max.h"
 
@@ -21,7 +22,7 @@
 
 /// ID of each c*vk component. Used for error codes, and other identification handles.
 typedef enum Component_ID {
-  Validate = ComponentOffset + 1,
+  Validation = ComponentOffset + 1,
   Instance,
   Device,
   Component_Force32 = 0x7FFFFFFF,

@@ -1,5 +1,5 @@
 //:__________________________________________________________________
-//  cvk  |  Copyright (C) Ivan Mar (sOkam!)  |  GNU GPLv3 or later  |
+//  cvk  |  Copyright (C) Ivan Mar (sOkam!)  |  GNU GPLv3 or later  :
 //:__________________________________________________________________
 #pragma once
 #include "./base.h"
@@ -10,10 +10,12 @@ cstr* cvk_instance_getExtensions(u32* count);
 
 /// List of arguments given to the `cvk_instance_create` function.
 typedef struct cvk_instance_create_args_s {
-  str appName;
-  u32 appVers;
-  str engineName;
-  u32 engineVers;
+  str                  appName;
+  u32                  appVers;
+  str                  engineName;
+  u32                  engineVers;
+  VkDebugMessengerCfg* debugCfg;
+  VkAllocator*         allocator;
 } cvk_instance_create_args;
 
 /// Creates a new VkInstance object, including all of its required properties.

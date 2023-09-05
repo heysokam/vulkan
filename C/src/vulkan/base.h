@@ -1,5 +1,5 @@
 //:__________________________________________________________________
-//  cvk  |  Copyright (C) Ivan Mar (sOkam!)  |  GNU GPLv3 or later  |
+//  cvk  |  Copyright (C) Ivan Mar (sOkam!)  |  GNU GPLv3 or later  :
 //:__________________________________________________________________
 // Base vk root module : Imported by files in this folder.  |
 //__________________________________________________________|
@@ -9,4 +9,3 @@
 #include "../cdk/std.h"
 // c*vk dependencies
 #include "./max.h"
-

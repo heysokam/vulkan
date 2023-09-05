@@ -35,6 +35,7 @@ int main(const int argc, const char* argv[]) {
     .appVers    = cdk_makeVersion(0, 0, 0),
     .engineName = "c*vk | Engine",
     .engineVers = cdk_makeVersion(0, 0, 0),
+    .allocator  = NULL,
   });
   while (!csys_close(&sys)) {
     csys_update(&sys);

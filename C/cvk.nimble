@@ -1,5 +1,5 @@
 #:__________________________________________________________________
-#  cvk  |  Copyright (C) Ivan Mar (sOkam!)  |  GNU GPLv3 or later  |
+#  cvk  |  Copyright (C) Ivan Mar (sOkam!)  |  GNU GPLv3 or later  :
 #:__________________________________________________________________
 import std/[ os,strformat ]
 # confy dependencies
@@ -9,7 +9,7 @@ from confy/cfg  as cfg import nil
 #___________________
 # Package
 packageName   = "cvk"
-version       = "0.0.4"
+version       = "0.0.5"
 author        = "sOkam"
 description   = "c*vk | Ergonomic C Vulkan API"
 license       = "GPL-3.0-or-later"

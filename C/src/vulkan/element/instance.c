@@ -1,5 +1,5 @@
 //:__________________________________________________________________
-//  cvk  |  Copyright (C) Ivan Mar (sOkam!)  |  GNU GPLv3 or later  |
+//  cvk  |  Copyright (C) Ivan Mar (sOkam!)  |  GNU GPLv3 or later  :
 //:__________________________________________________________________
 // External dependencies
 #include <GLFW/glfw3.h>
@@ -16,7 +16,7 @@
 
 
 /// List of our desired extensions
-cstr extensions[Max_VulkanExtensions] = { VK_EXT_DEBUG_UTILS_EXTENSION_NAME };
+static cstr extensions[Max_VulkanExtensions] = { VK_EXT_DEBUG_UTILS_EXTENSION_NAME };
 
 
 cstr* cvk_instance_getExtensions(u32* count) {
@@ -41,7 +41,7 @@ VkInstance cvk_instance_create(cvk_instance_create_args in) {
   VkInstance result;  // clang-format off
   VkResult code = vkCreateInstance(&(VkInstanceCreateInfo){
     .sType                   = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
-    .pNext                   = NULL,
+    .pNext                   = in.debugCfg,  // Add the Debug Messenger Extension config to the chain
     .flags                   = FlagsInstance,
     .pApplicationInfo        = &(VkApplicationInfo){
       .sType                 = VK_STRUCTURE_TYPE_APPLICATION_INFO,
@@ -57,7 +57,7 @@ VkInstance cvk_instance_create(cvk_instance_create_args in) {
     .enabledExtensionCount   = extCount,
     .ppEnabledExtensionNames = extNames,
      },
-     NULL, &result);
+     in.allocator, &result);
   // clang-format on
   if (code != VK_SUCCESS) fail(Instance, "Failed to create Vulkan Instance");
   return result;
