@@ -8,7 +8,7 @@ from confy/nims as run import nil
 #_____________________________
 # Package
 packageName   = "vkp"
-version       = "0.0.1"
+version       = "0.0.2"
 author        = "sOkam"
 description   = "vk+ | Vulkan C++ API"
 license       = "GPL-3.0-or-later"

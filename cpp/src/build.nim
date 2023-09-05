@@ -3,14 +3,33 @@
 #:__________________________________________________________________
 import confy
 
+#___________________
+# Confy config
 cfg.verbose = on
 
-let libs = @["-lglfw", "-lvulkan"].toLD
 
+#___________________
+# Folders
+let libDir = srcDir/"lib"
+let cdkDir = libDir/"cendk"
+#___________________
+# Source Code
+let cdkSrc = @[
+  cdkDir/"std.cpp",
+  cdkDir/"opts.cpp",
+  cdkDir/"vk.cpp",
+  cdkDir/"system.cpp",
+  ].toDirFile()
+let vkpSrc = srcDir.glob(".cpp") & cdkSrc
+#___________________
+# Flags
+let libs   = @["-lglfw", "-lvulkan"].toLD
+#___________________
+# Target
 var vkp = Program.new(
-  src   = srcDir.glob(".cpp"),
+  src   = vkpSrc,
   trg   = "vkp",
   flags = allPP & libs,
   )
-vkp.build( run=on, force=on )
+vkp.build( run=on, force=on  )
 
