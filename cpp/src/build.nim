@@ -1,10 +1,16 @@
-#:___________________________________________________________________
-#  vk++  |  Copyright (C) Ivan Mar (sOkam!)  |  GNU GPLv3 or later  :
-#:___________________________________________________________________
+#:__________________________________________________________________
+#  vk+  |  Copyright (C) Ivan Mar (sOkam!)  |  GNU GPLv3 or later  :
+#:__________________________________________________________________
 import confy
 
 cfg.verbose = on
 
-var bin = Program.new(srcDir.glob(".cpp"), "vkp")
-bin.build( run=on, force=on )
+let libs = @["-lglfw"].toLD
+
+var vkp = Program.new(
+  src   = srcDir.glob(".cpp"),
+  trg   = "vkp",
+  flags = allPP & libs,
+  )
+vkp.build( run=on, force=on )
 

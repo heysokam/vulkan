@@ -1,6 +1,6 @@
-#:___________________________________________________________________
-#  vk++  |  Copyright (C) Ivan Mar (sOkam!)  |  GNU GPLv3 or later  :
-#:___________________________________________________________________
+#:__________________________________________________________________
+#  vk+  |  Copyright (C) Ivan Mar (sOkam!)  |  GNU GPLv3 or later  :
+#:__________________________________________________________________
 import std/[ os,strformat ]
 from confy/cfg  as cfg import nil
 from confy/nims as run import nil
@@ -8,9 +8,9 @@ from confy/nims as run import nil
 #_____________________________
 # Package
 packageName   = "vkp"
-version       = "0.0.0"
+version       = "0.0.1"
 author        = "sOkam"
-description   = "vk++ | Vulkan C++ API"
+description   = "vk+ | Vulkan C++ API"
 license       = "GPL-3.0-or-later"
 let gitURL    = &"https://github.com/heysokam/{packageName}"
 
