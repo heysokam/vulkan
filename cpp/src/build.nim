@@ -5,7 +5,7 @@ import confy
 
 cfg.verbose = on
 
-let libs = @["-lglfw"].toLD
+let libs = @["-lglfw", "-lvulkan"].toLD
 
 var vkp = Program.new(
   src   = srcDir.glob(".cpp"),

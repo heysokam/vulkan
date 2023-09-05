@@ -7,7 +7,8 @@
 #include "./lib/cendk/system.hpp"
 #define Cen_opts
 #include "./lib/cendk/opts.hpp"
-#include "./lib/cendk/lib/vulkan.hpp"
+// Vulkan Dependencies
+#include "./lib/cendk/vk.cpp"
 
 namespace cvk {
 class Gpu {
