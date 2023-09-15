@@ -10,9 +10,8 @@ import confy except `/`
 # Confy custom configuration  #|
 confy.cfg.prefix  = "cvk: "   #|
 confy.cfg.tab     = "   : "   #|
-confy.cfg.quiet   = off       #|
+confy.cfg.quiet   = on        #|
 confy.cfg.verbose = off       #|
-confy.cfg.zigSystemBin = on   #|
 #_____________________________#|
 let forceClean    = on
 const debug = not (defined(release) or defined(danger)) or on
