@@ -13,7 +13,7 @@ cstr const* validationLayers = NULL;
 
 
 void cvk_validate_chkSupport(void) {
-  if (!debug) return;
+  if (!cdk_debug) return;
   // Get the layer names with glfw
   u32 count;
   vkEnumerateInstanceLayerProperties(&count, NULL);
@@ -69,7 +69,7 @@ VkDebugMessenger* cvk_validate_createDebug(  // clang-format off
     const VkAllocationCallbacks*        allocator
   ) {  // clang-format on
   // Exit early if we are not on debug mode
-  if (!debug) return NULL;
+  if (!cdk_debug) return NULL;
   // Find the function to create the Messenger (its an extension, so must be requested)
   PFN_vkCreateDebugUtilsMessengerEXT createMessenger = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT");
   // Setup the result

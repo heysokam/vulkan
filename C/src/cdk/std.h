@@ -95,11 +95,11 @@ u32 cdk_makeVersion(const u32 M, const u32 m, const u32 p);
 
 /// Build Mode aliasing
 #if defined NDEBUG || !defined DEBUG
-#  define release true
-#  define debug false
+#define cdk_release true
+#define cdk_debug false
 #elif defined DEBUG
-#  define release false
-#  define debug true
+#define cdk_release false
+#define cdk_debug true
 #endif
 
 //_________________________________________________

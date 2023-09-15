@@ -9,7 +9,7 @@
 
 #include <stdio.h>
 int main(const int argc, const char* argv[]) {
-  #if debug
+  #if cdk_debug
   printf("hello world with -DDEBUG\n");
   #endif
   opt_parse(argc, argv);

@@ -4,6 +4,7 @@
 #include "./device.h"
 
 
+VkDevice cvk_device_create(void);
 VkDevice cvk_device_create(void){
   // vkCreateDevice
   return NULL;
