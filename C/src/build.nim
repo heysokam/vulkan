@@ -1,10 +1,11 @@
 #:__________________________________________________________________
 #  cvk  |  Copyright (C) Ivan Mar (sOkam!)  |  GNU GPLv3 or later  :
 #:__________________________________________________________________
-import std/os
+import std/os except `/`
 import std/strformat
 import std/strutils
-import confy except `/`
+when not defined(nimble) : import ../../../../ndk/confy/src/confy
+else                     : import confy
 
 #______________________________
 # Confy custom configuration  #|
@@ -39,7 +40,7 @@ let glfwLibs   = @[&"-L{glfwTrgDir}", "-lglfw3_static"]
 # Task
 template glfw *() :void=
   log "Starting to build GLFW static..."
-  sh "cd $1; cmake -S . -B ./build; cd ./build; make glfw" % [glfwDir]
+  sh &"cd {glfwDir}; cmake -S . -B ./build; cd ./build; make glfw"
   copyFile( glfwRename[0], glfwRename[1] )
   log "Finished building GLFW."
 
@@ -59,4 +60,4 @@ var bin = Program.new(
 
 when isMainModule:
   glfw()
-  bin.build( run=on, force=forceClean )
+  bin.build( @["all"], run=on, force=forceClean )
