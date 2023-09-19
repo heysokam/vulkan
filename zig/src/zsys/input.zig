@@ -13,9 +13,9 @@ pub const Input = struct {
 
 pub fn init(win :*w.Window) Input {
   // Input
-  _ = glfw.setKeyCallback(win.ct, cb.key);
-  _ = glfw.setMouseBtnCallback(win.ct, null);
-  _ = glfw.setMousePosCallback(win.ct, null);
-  _ = glfw.setMouseScrollCallback(win.ct, null);
+  _ = glfw.setKeyCB(win.ct, cb.key);
+  _ = glfw.setMouseBtnCB(win.ct, null);
+  _ = glfw.setMousePosCB(win.ct, null);
+  _ = glfw.setMouseScrollCB(win.ct, null);
   return Input{};
 }

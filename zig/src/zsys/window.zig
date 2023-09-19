@@ -25,6 +25,6 @@ pub fn init(W :u32, H :u32, title :[]const u8) Window {
   glfw.windowHint(glfw.ClientApi, glfw.NoApi);
   glfw.windowHint(glfw.Resizable, glfw.False);
   result.ct = glfw.createWindow(@intCast(result.W), @intCast(result.H), result.title.ptr, null, null);
-  _ = glfw.setResizeCallback(result.ct, null);
+  _ = glfw.setResizeCB(result.ct, null);
   return result;
 }
