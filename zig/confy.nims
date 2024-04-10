@@ -6,9 +6,10 @@ import std/[ os,strformat ]
 const thisDir = currentSourcePath().parentDir()
 const srcDir  = thisDir/"src"
 const binDir  = thisDir/"bin"
+const zigDir  = binDir/".zig"
 
 # Zig Compiler Setup
-const cc        = "zig"
+const cc        = zigDir/"zig"
 const ZcacheDir = binDir/"zcache"
 const Zflags    = "-fPIE -fcompiler-rt"
 const Zcache    = &"--cache-dir {ZcacheDir} --global-cache-dir {ZcacheDir}"
