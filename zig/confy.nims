@@ -28,6 +28,6 @@ proc zig *(kind: TrgKind; src,trg,flags :string) :void=
 # Build
 let src   = srcDir/"zvk.zig"
 let trg   = binDir/"zvk"
-let flags = "-lglfw -lc -lm"
+let flags = "-lglfw -lc -lm -lvulkan"
 zig Program, src, trg, flags
 exec trg

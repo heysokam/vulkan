@@ -36,8 +36,27 @@ pub const app = struct {
 //______________________________________
 // @section Instance
 //____________________________
-pub const Instance = C.VkInstance;
-pub const instance = struct {
-  pub const create  = C.vkCreateInstance;
-  pub const destroy = C.vkDestroyInstance;
+pub const Instance = struct {
+  ct  : C.VkInstance,
+  cfg : C.VkInstanceCreateInfo,
+  pub fn create  () void {}
+  pub fn destroy (m :*Instance) void {_=m;}
 };
+
+// pub const Instance = ;
+// pub const instance = struct {
+//   pub fn defaults(appCfg :*const app.Cfg) instance.Cfg {
+//     return instance.Cfg{
+//       .sType                   = C.VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
+//       .pNext                   = null,
+//       .flags                   = 0,
+//       .pApplicationInfo        = appCfg, // const VkApplicationInfo*
+//       .enabledLayerCount       = 0, // uint32_t
+//       .ppEnabledLayerNames     = null, // const char* const*
+//       .enabledExtensionCount   = 0, // uint32_t
+//       .ppEnabledExtensionNames = null, // const char* const*
+//       };
+//   }
+//   pub const create  = C.vkCreateInstance;
+//   pub const destroy = C.vkDestroyInstance;
+// };

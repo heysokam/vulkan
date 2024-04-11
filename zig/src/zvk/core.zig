@@ -11,14 +11,14 @@ pub const Vulkan = struct {
 
 pub fn init() Vulkan {
   var result = Vulkan{.instance=null};
-  const instanceCfg = vk.app.defaults();
-  vk.instance.create(
-    vk.app.Cfg{
-      .pApplicationName   = "Hello z*vk Triangle",
-      .applicationVersion = vk.version.new(1, 0, 0),
-      .pEngineName        = "Hello z*vk Triangle Engine",
-      .engineVersion      = vk.version.new(1, 0, 0),
-      },
+  _ = vk.instance.create(
+    &vk.instance.defaults(&vk.app.defaults()),
+    // vk.app.Cfg{
+    //   .pApplicationName   = "Hello z*vk Triangle",
+    //   .applicationVersion = vk.version.new(1, 0, 0),
+    //   .pEngineName        = "Hello z*vk Triangle Engine",
+    //   .engineVersion      = vk.version.new(1, 0, 0),
+    //   },
     null,
     &result.instance,
   ); // << vk.instance_create(InstanceCfg{ ... })
