@@ -29,15 +29,15 @@ type GPU * = object
 #_____________________________
 # Functions
 #___________________
-proc api_instance_extensions_get *(exts :openArray[cstring]= []) :seq[cstring]=
+proc api_instance_extensions_get *(exts :openArray[string]= []) :seq[string]=
   ## @internal
   ## @descr Gets the full list of instance extensions, by merging our desired {@arg list} with the ones required by the system.
   ## @todo Forces the library to depend on GLFW
   result = exts.toSeq
   var reqCount :u32= 0
-  var required = glfwGetRequiredInstanceExtensions(addr reqCount)
-  if required.isNil: err "Couldn't find any Extensions. Vulkan is not usable (probably not installed)"
-  for ext in cstringArrayToSeq(required, reqCount): result.add(ext.cstring)
+  var required = glfwGetRequiredInstanceExtensions(addr reqCount).cstringArrayToSeq( reqCount )
+  if required.len == 0: err "Couldn't find any Extensions. Vulkan is not usable (probably not installed)"
+  for ext in required: result.add(ext.string)
 #___________________
 proc api_surface_create *(
     instance  : mvk.Instance;
@@ -95,11 +95,11 @@ proc init (
     # 2.2.2 Instance Options
     flags       = mvk.cfg_instance_Flags,
     extCount    = exts.len.uint32,
-    exts        = exts[0].addr,
+    exts        = CstrArray.new( exts ),
     # 2.2.3 Validation
     validate    = mvk.cfg_validation_Active,
     layerCount  = mvk.cfg_validation_LayerCount,
-    layers      = mvk.cfg_validation_Layers[0].addr,
+    layers      = CstrArray.new( mvk.cfg_validation_Layers ),
     # 2.2.4 Debug
     dbgFlags    = mvk.cfg_validation_DebugFlags,
     dbgSeverity = mvk.cfg_validation_DebugSeverity,
