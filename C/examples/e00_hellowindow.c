@@ -5,10 +5,10 @@
 // Creates a window with GLFW and keeps it open.  |
 // It can be closed by pressing the Escape key.   |
 //________________________________________________|
-#include "../src/cvk.h"
+#include "../cvk.h"
 
 #include <stdio.h>
-int main(const int argc, const char *argv[]) {
+int main(int const argc, char const* argv[]) {
   printf("hello world\n");
   opt_parse(argc, argv);
   cWindow w = w_init((w_init_args){ // clang-format off

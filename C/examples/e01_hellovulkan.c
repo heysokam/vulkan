@@ -5,10 +5,10 @@
 // Creates a window with GLFW,                            |
 // and creates the most minimal vulkan context possible.  |
 //________________________________________________________|
-#include "../src/cvk.h"
+#include "../cvk.h"
 
 #include <stdio.h>
-int main(const int argc, const char *argv[]) {
+int main(int const argc, char const* argv[]) {
   printf("hello world\n");
   opt_parse(argc, argv);
   Vulkan vk = cvk_init((cvk_init_args){ // clang-format off
