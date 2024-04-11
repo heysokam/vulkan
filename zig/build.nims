@@ -4,8 +4,8 @@
 import std/[ os,strformat ]
 # Folders
 const thisDir = currentSourcePath().parentDir()
-const srcDir  = thisDir/"src"
-const binDir  = thisDir/"bin"
+const srcDir  = thisDir
+const binDir  = thisDir/".."/"bin"
 const zigDir  = binDir/".zig"
 
 # Zig Compiler Setup
