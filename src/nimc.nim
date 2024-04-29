@@ -4,10 +4,8 @@
 # @deps build
 import ./cfg as all
 # @deps ndk
-import confy
 import nstd/opts as cli
-# @deps build
-import ./types
+import nstd/shell
 
 
 #_______________________________________

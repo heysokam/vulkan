@@ -4,9 +4,12 @@
 import ../vulkan as vk
 import ./application
 
+#_______________________________________
+# @section Instance: Configuration
+#_____________________________
 proc info *(
-  app   :ptr vk.ApplicationInfo;
-  flags :vk.InstanceCreateFlags;
+    app   : ptr vk.ApplicationInfo;
+    flags : vk.InstanceCreateFlags;
   ) :vk.InstanceCreateInfo=
   vk.InstanceCreateInfo(
     sType                   : vk.StructureType_Instance_CreateInfo,
@@ -19,11 +22,14 @@ proc info *(
     ppEnabledExtensionNames : nil,
     )
 
+#_______________________________________
+# @section Instance: Management
+#_____________________________
 proc create *(
-  appName    :string;
-  appVers    :uint32;
-  engineName :string;
-  engineVers :uint32;
+    appName    : string;
+    appVers    : uint32;
+    engineName : string;
+    engineVers : uint32;
   ) :vk.Instance=
   var info = instance.info(
     app          = vaddr application.info(
@@ -34,3 +40,4 @@ proc create *(
       ), # << application.info( ... )
     flags = 0 as vk.InstanceCreateFlags,
     ) # instance.info( ... )
+

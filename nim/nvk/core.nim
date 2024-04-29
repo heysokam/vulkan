@@ -14,8 +14,8 @@ type VulkanCfg * = object
 type Vulkan * = ref object
   instance :vk.Instance
 
-proc update *(vk :var Vulkan) :void= discard
-proc term   *(vk :var Vulkan) :void= discard
+proc update *(gpu :var Vulkan) :void= discard
+proc term   *(gpu :var Vulkan) :void= discard
 proc init   *(vc :VulkanCfg= VulkanCfg()) :Vulkan=
   new result
   result.instance = instance.create(
