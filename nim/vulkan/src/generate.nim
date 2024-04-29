@@ -11,7 +11,7 @@ confy.cfg.nim.systemBin = off
 let genDir  = cfg.rootDir/"gen"
 let genFile = genDir/"result.nim"
 let srcDir  = cfg.srcDir
-let trgFile = build.srcDir/"vulkan.nim"
+let trgFile = generate.srcDir/"vulkan.nim"
 
 #_______________________________________
 # Install Opir if it doesn't exist
@@ -43,7 +43,7 @@ info "Done generating Vulkan bindings with Futhark."
 
 #_______________________________________
 # Move the generated output
-cfg.srcDir = build.srcDir
+cfg.srcDir = generate.srcDir
 info &"Outputting the resulting bindings into:  {trgFile}"
 cp genFile, trgFile
 info "Done generating Vulkan bindings."
