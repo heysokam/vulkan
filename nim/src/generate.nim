@@ -1,19 +1,27 @@
-# @deps std
-from std/strformat import `&`
 # @deps ndk
+import nstd/paths
+import nstd/strings
 import confy
 
 info "Generating Vulkan bindings ..."
 
 #_______________________________________
-# Configure the Generator Buildsystem
+# @section Configure the Buildsystem
+#_____________________________
+# Confy cfg
 confy.cfg.nim.systemBin = off
-let genDir  = cfg.rootDir/"gen"
-let genFile = genDir/"result.nim"
+confy.cfg.libDir        = cfg.binDir/".lib"
+# Generator Cfg
 let srcDir  = cfg.srcDir
-let trgFile = generate.srcDir/"vulkan.nim"
+let genDir  = cfg.srcDir/"gen"
+let genFile = genDir/"result.nim"
+let trgDir  = cfg.rootDir/"vulkan"
+let trgFile = trgDir/"api.nim"
+
 
 #_______________________________________
+# @section Opir
+#_____________________________
 # Install Opir if it doesn't exist
 import confy/builder/nim as cc
 let opir = getEnv("HOME").Path/".local"/"bin"/"opir"
@@ -24,8 +32,10 @@ if not fileExists(opir):
   ln getEnv("HOME").Path/".nimble"/"bin"/"opir", opir
   info "Done installing Futhark and Opir."
 
+
 #_______________________________________
-# Build the generator
+# @section Build the generator
+#_____________________________
 info "Generating Vulkan bindings with Futhark ..."
 cfg.srcDir = genDir
 build Program.new(
@@ -41,8 +51,10 @@ build Program.new(
   ) # << Program.new( ... )
 info "Done generating Vulkan bindings with Futhark."
 
+
 #_______________________________________
-# Move the generated output
+# @section Move the generated output
+#_____________________________
 cfg.srcDir = generate.srcDir
 info &"Outputting the resulting bindings into:  {trgFile}"
 cp genFile, trgFile
