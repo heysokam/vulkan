@@ -1,3 +1,6 @@
+#:_________________________________________________________
+#  vulkan  |  Copyright (C) Ivan Mar (sOkam!)  |  LGPLv3  :
+#:_________________________________________________________
 # @deps std
 from std/strutils import startsWith, endsWith, toUpperAscii, replace
 from std/os import parentDir, `/`

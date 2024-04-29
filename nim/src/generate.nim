@@ -1,3 +1,6 @@
+#:_________________________________________________________
+#  vulkan  |  Copyright (C) Ivan Mar (sOkam!)  |  LGPLv3  :
+#:_________________________________________________________
 # @deps ndk
 import nstd/paths
 import nstd/strings

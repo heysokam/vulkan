@@ -1,3 +1,7 @@
+#:_________________________________________________________
+#  vulkan  |  Copyright (C) Ivan Mar (sOkam!)  |  LGPLv3  :
+#:_________________________________________________________
+
 const stripPrefix * = [ "vk", "Vk", "VK_", ]
 const stripStart  * = [ ""
   # 1.0 Enums
