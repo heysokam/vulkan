@@ -18,6 +18,9 @@ pub const window                 = struct {
   pub const setClose             = c.glfwSetWindowShouldClose;
   pub const size                 = c.glfwGetWindowSize;
 }; //:: window
+pub const framebuffer            = struct {
+  pub const size                 = c.glfwGetFramebufferSize;
+}; //:: framebuffer
 pub const cb                     = struct {
   pub const setResize            = c.glfwSetFramebufferSizeCallback;
   pub const setKey               = c.glfwSetKeyCallback;
@@ -35,6 +38,9 @@ pub const vk                     = struct {
     pub const getProc            = c.glfwGetInstanceProcAddress;
     pub const getExts            = c.glfwGetRequiredInstanceExtensions;
   }; //:: vk.instance
+  pub const surface              = struct {
+    pub const create             = c.glfwCreateWindowSurface;
+  }; //:: vk.surface
 }; //:: vk
 
 pub const version                = struct {
