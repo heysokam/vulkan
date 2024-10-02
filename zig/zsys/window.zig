@@ -22,9 +22,9 @@ pub fn init(W :u32, H :u32, title :[]const u8) Window {
     .ct    = null,
   };
   _ = glfw.init();
-  glfw.windowHint(glfw.ClientApi, glfw.NoApi);
-  glfw.windowHint(glfw.Resizable, glfw.False);
-  result.ct = glfw.createWindow(@intCast(result.W), @intCast(result.H), result.title.ptr, null, null);
-  _ = glfw.setResizeCB(result.ct, null);
+  glfw.window.hint(glfw.ClientApi, glfw.NoApi);
+  glfw.window.hint(glfw.Resizable, glfw.False);
+  result.ct = glfw.window.create(@intCast(result.W), @intCast(result.H), result.title.ptr, null, null);
+  _ = glfw.cb.setResize(result.ct, null);
   return result;
 }

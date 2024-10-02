@@ -8,14 +8,15 @@ const cb   = @import("./cb.zig");
 const w    = @import("./window.zig");
 
 pub const Input = struct {
-  pub fn update(m :*Input) void {_=m; glfw.pollEvents(); }
+  _:void=undefined,
+  pub fn update(I :*Input) void {_=I; glfw.sync(); }
 };
 
-pub fn init(win :*w.Window) Input {
+pub fn init (win :*w.Window) Input {
   // Input
-  _ = glfw.setKeyCB(win.ct, cb.key);
-  _ = glfw.setMouseBtnCB(win.ct, null);
-  _ = glfw.setMousePosCB(win.ct, null);
-  _ = glfw.setMouseScrollCB(win.ct, null);
+  _ = glfw.cb.setKey(win.ct, cb.key);
+  _ = glfw.cb.setMouseBtn(win.ct, null);
+  _ = glfw.cb.setMousePos(win.ct, null);
+  _ = glfw.cb.setMouseScroll(win.ct, null);
   return Input{};
 }
