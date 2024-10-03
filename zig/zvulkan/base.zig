@@ -4,6 +4,11 @@
 // @deps vulkan
 const c = @import("../lib/vulkan.zig");
 
+pub const stype = struct {
+  pub const AppInfo       = c.VK_STRUCTURE_TYPE_APPLICATION_INFO;
+  pub const InstanceInfo  = c.VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+};
+
 pub const StructureType = enum(i32) {
     application_info                                                             = 0,
     instance_create_info                                                         = 1,

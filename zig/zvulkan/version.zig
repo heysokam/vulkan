@@ -13,7 +13,7 @@ pub const Minor = u10;
 pub const Patch = u12;
 
 pub const api = struct {
-  pub const v1_0  = c.VK_VERSION_1_0;
+  pub const v1_0  = c.VK_API_VERSION_1_0;
   pub const v1_1  = c.VK_API_VERSION_1_1;
   pub const v1_2  = c.VK_API_VERSION_1_2;
   pub const v1_3  = c.VK_API_VERSION_1_3;

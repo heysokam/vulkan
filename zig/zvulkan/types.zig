@@ -11,4 +11,5 @@ pub const SpirV     = [*:0]const u8; // vk.String; // []const u8; // [*:0]const 
 pub const Allocator = c.VkAllocationCallbacks;
 pub const Size      = c.VkExtent2D;
 pub const Vol       = c.VkExtent3D;
+pub const Flags     = c.VkFlags;
 
