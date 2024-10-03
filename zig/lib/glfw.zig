@@ -5,16 +5,17 @@ const c = @cImport({
   @cDefine("GLFW_INCLUDE_VULKAN", {});
   @cInclude("GLFW/glfw3.h");
   });
+const glfw = @This();
 
 pub const Window                 = c.GLFWwindow;
 pub const KeyFunc                = c.GLFWkeyfun;
-pub const init                   = c.glfwInit;
+pub fn    init                   () bool {return c.glfwInit() == glfw.True; }
 pub const term                   = c.glfwTerminate;
 pub const window                 = struct {
   pub const hint                 = c.glfwWindowHint;
   pub const create               = c.glfwCreateWindow;
   pub const destroy              = c.glfwDestroyWindow;
-  pub const close                = c.glfwWindowShouldClose;
+  pub fn    close                (W :?*glfw.Window) bool {return c.glfwWindowShouldClose(W) == glfw.True; }
   pub const setClose             = c.glfwSetWindowShouldClose;
   pub const size                 = c.glfwGetWindowSize;
 }; //:: window
@@ -31,18 +32,6 @@ pub const cb                     = struct {
 
 pub const sync                   = c.glfwPollEvents;
 pub const getTime                = c.glfwGetTime;
-pub const vk                     = struct {
-  pub const supported            = c.glfwVulkanSupported;
-  pub const getProc              = c.glfwGetProcAddress;
-  pub const instance             = struct {
-    pub const getProc            = c.glfwGetInstanceProcAddress;
-    pub const getExts            = c.glfwGetRequiredInstanceExtensions;
-  }; //:: vk.instance
-  pub const surface              = struct {
-    pub const create             = c.glfwCreateWindowSurface;
-  }; //:: vk.surface
-}; //:: vk
-
 pub const version                = struct {
   pub const M                    = c.GLFW_VERSION_MAJOR;
   pub const m                    = c.GLFW_VERSION_MINOR;
@@ -79,45 +68,26 @@ pub const CursorCenter           = c.GLFW_CENTER_CURSOR;
 pub const FramebufferTransparent = c.GLFW_TRANSPARENT_FRAMEBUFFER;
 pub const Hovered                = c.GLFW_HOVERED;
 pub const FocustOnShow           = c.GLFW_FOCUS_ON_SHOW;
-pub const RedBits                = c.GLFW_RED_BITS;
-pub const GreenBits              = c.GLFW_GREEN_BITS;
-pub const BlueBits               = c.GLFW_BLUE_BITS;
-pub const AlphaBits              = c.GLFW_ALPHA_BITS;
-pub const DepthBits              = c.GLFW_DEPTH_BITS;
-pub const StencilBits            = c.GLFW_STENCIL_BITS;
-pub const RedBitsAccum           = c.GLFW_ACCUM_RED_BITS;
-pub const GreenBitsAccum         = c.GLFW_ACCUM_GREEN_BITS;
-pub const BlueBitsAccum          = c.GLFW_ACCUM_BLUE_BITS;
-pub const AlphaBitsAccum         = c.GLFW_ACCUM_ALPHA_BITS;
+pub const bits = struct {
+  pub const Red                  = c.GLFW_RED_BITS;
+  pub const Green                = c.GLFW_GREEN_BITS;
+  pub const Blue                 = c.GLFW_BLUE_BITS;
+  pub const Alpha                = c.GLFW_ALPHA_BITS;
+  pub const Depth                = c.GLFW_DEPTH_BITS;
+  pub const Stencil              = c.GLFW_STENCIL_BITS;
+  pub const accum = struct {
+    pub const Red                = c.GLFW_ACCUM_RED_BITS;
+    pub const Green              = c.GLFW_ACCUM_GREEN_BITS;
+    pub const Blue               = c.GLFW_ACCUM_BLUE_BITS;
+    pub const Alpha              = c.GLFW_ACCUM_ALPHA_BITS;
+  }; //:: accum
+}; //:: bits
 pub const BuffersAux             = c.GLFW_AUX_BUFFERS;
 pub const Stereo                 = c.GLFW_STEREO;
 pub const Samples                = c.GLFW_SAMPLES;
 pub const SRGBCapable            = c.GLFW_SRGB_CAPABLE;
 pub const RefreshRate            = c.GLFW_REFRESH_RATE;
 pub const DoubleBuffer           = c.GLFW_DOUBLEBUFFER;
-
-pub const Api                    = c.GLFWAPI;
-pub const ClientApi              = c.GLFW_CLIENT_API;
-pub const NoApi                  = c.GLFW_NO_API;
-pub const opengl                 = struct {
-  pub const Api                  = c.GLFW_OPENGL_API;
-  pub const ESApi                = c.GLFW_OPENGL_ES_API;
-  pub const Any                  = c.GLFW_OPENGL_ANY_PROFILE;
-  pub const Core                 = c.GLFW_OPENGL_CORE_PROFILE;
-  pub const Compat               = c.GLFW_OPENGL_COMPAT_PROFILE;
-  pub const ForwardCompat        = c.GLFW_OPENGL_FORWARD_COMPAT;
-  pub const DebugContext         = c.GLFW_OPENGL_DEBUG_CONTEXT;
-  pub const Profile              = c.GLFW_OPENGL_PROFILE;
-};
-pub const context                = struct {
-  pub const version              = struct {
-    pub const M                  = c.GLFW_CONTEXT_VERSION_MAJOR;
-    pub const m                  = c.GLFW_CONTEXT_VERSION_MINOR;
-    pub const p                  = c.GLFW_CONTEXT_REVISION;
-  }; //:: context.version
-  pub const Robustness           = c.GLFW_CONTEXT_ROBUSTNESS;
-}; //:: context
-
 
 pub const Cursor                 = c.GLFW_CURSOR;
 pub const sticky                 = struct {
@@ -373,4 +343,50 @@ pub const pad                    = struct {
     pub const Last               = c.GLFW_GAMEPAD_AXIS_LAST;
   }; //:: axis
 }; //:: pad
+
+pub const Api                    = c.GLFWAPI;
+pub const ClientApi              = c.GLFW_CLIENT_API;
+pub const NoApi                  = c.GLFW_NO_API;
+pub const context                = struct {
+  pub const version              = struct {
+    pub const M                  = c.GLFW_CONTEXT_VERSION_MAJOR;
+    pub const m                  = c.GLFW_CONTEXT_VERSION_MINOR;
+    pub const p                  = c.GLFW_CONTEXT_REVISION;
+  }; //:: context.version
+  pub const Robustness           = c.GLFW_CONTEXT_ROBUSTNESS;
+}; //:: context
+
+pub const opengl                 = struct {
+  pub const Api                  = c.GLFW_OPENGL_API;
+  pub const ESApi                = c.GLFW_OPENGL_ES_API;
+  pub const Any                  = c.GLFW_OPENGL_ANY_PROFILE;
+  pub const Core                 = c.GLFW_OPENGL_CORE_PROFILE;
+  pub const Compat               = c.GLFW_OPENGL_COMPAT_PROFILE;
+  pub const ForwardCompat        = c.GLFW_OPENGL_FORWARD_COMPAT;
+  pub const DebugContext         = c.GLFW_OPENGL_DEBUG_CONTEXT;
+  pub const Profile              = c.GLFW_OPENGL_PROFILE;
+};
+
+pub const vk                     = struct {
+  const vulkan                   = @import("./vulkan/vk.zig");
+  pub fn supported               () bool { return c.glfwVulkanSupported() == glfw.True; }
+  pub const getProc              = c.glfwGetProcAddress;
+  pub const instance             = struct {
+    pub const getExts            = c.glfwGetRequiredInstanceExtensions;
+    pub const getProc            :vk.instance.GetProcFunc= @ptrCast(&c.glfwGetInstanceProcAddress);  // pub const getProc = c.glfwGetInstanceProcAddress;
+    const GetProcFunc            = *const fn (
+                                     instance : vulkan.Instance,
+                                     procname : [*:0]const u8
+                                   ) vulkan.PfnVoidFunction;
+  }; //:: vk.instance
+  pub const surface              = struct {
+    pub const create             :vk.surface.CreateFunc= @ptrCast(&c.glfwCreateWindowSurface);  // pub const create = c.glfwCreateWindowSurface;
+    const CreateFunc             = *const fn (
+                                     instance  : vulkan.Instance,
+                                     window    : ?*glfw.Window,
+                                     allocator : ?*const vulkan.AllocationCallbacks,
+                                     surface   : *const vulkan.SurfaceKHR
+                                   ) vulkan.Result;
+  }; //:: vk.surface
+}; //:: vk
 

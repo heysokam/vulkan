@@ -1,9 +1,11 @@
 //:___________________________________________________________________
 //  zsys  |  Copyright (C) Ivan Mar (sOkam!)  |  GNU GPLv3 or later  :
 //:___________________________________________________________________
-// External dependencies
+// @deps std
+const std = @import("std");
+// @deps External
 const glfw = @import("../lib/glfw.zig");
-// z*sys dependencies
+// @deps z*sys
 const cb   = @import("./cb.zig");
 
 pub const Window = struct {
@@ -14,14 +16,18 @@ pub const Window = struct {
   pub fn update(m :*Window) void {_=m;}
 }; // << Window { }
 
-pub fn init(W :u32, H :u32, title :[]const u8) Window {
+pub fn init(W :u32, H :u32, title :[]const u8) !Window {
   var result = Window{
     .W     = W,
     .H     = H,
     .title = title,
     .ct    = null,
   };
-  _ = glfw.init();
+  if (!glfw.init()) return error.glfw_InitFailed;
+  if (!glfw.vk.supported()) {
+    std.log.err("GLFW could not find libvulkan", .{});
+    return error.NoVulkan;
+  }
   glfw.window.hint(glfw.ClientApi, glfw.NoApi);
   glfw.window.hint(glfw.Resizable, glfw.False);
   result.ct = glfw.window.create(@intCast(result.W), @intCast(result.H), result.title.ptr, null, null);
