@@ -49,14 +49,14 @@ pub fn main () !void {
 //:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 //:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 pub const zvk = struct {
-  const vk = @import("./lib/vulkan.zig");
+  const vk = @import("./zvulkan.zig");
 
   //______________________________________
   // @section General Type Aliases
   //____________________________
-  pub const String = vk.String;
-  pub const Size   = vk.Size;
-  pub const SpirV  = vk.SpirV;
+  pub const String  = vk.String;
+  pub const Size    = vk.Size;
+  pub const SpirV   = vk.SpirV;
   pub const version = vk.version;
   pub const Version = vk.Version;
 
@@ -107,19 +107,21 @@ pub const zvk = struct {
   //____________________________
   pub const App = struct {
     pub const Cfg = vk.App.Cfg;
-    pub fn defaults (args :struct {
+    pub fn new (args :struct {
         appName    : zvk.String  = zvk.cfg.default.appName,
         appVers    : zvk.Version = zvk.cfg.default.appVers,
         engineName : zvk.String  = zvk.cfg.default.engineName,
         engineVers : zvk.Version = zvk.cfg.default.engineVers,
       }) zvk.App.Cfg {
       return zvk.App.Cfg{
-        .p_application_name  = args.appName,
-        .application_version = args.appVers,
-        .p_engine_name       = args.engineName,
-        .engine_version      = args.engineVers,
-        .api_version         = zvk.cfg.default.version,
-        }; // << VkApplicationInfo{ ... }
+        .sType              = vk.stype.AppInfo,         // @import("std").mem.zeroes(VkStructureType),
+        .pNext              = null,                     // .pNext: ?*const anyopaque = @import("std").mem.zeroes(?*const anyopaque),
+        .pApplicationName   = args.appName.ptr,         // .pApplicationName: [*c]const u8 = @import("std").mem.zeroes([*c]const u8),
+        .applicationVersion = args.appVers,             // .applicationVersion: u32 = @import("std").mem.zeroes(u32),
+        .pEngineName        = args.engineName.ptr,      // .pEngineName: [*c]const u8 = @import("std").mem.zeroes([*c]const u8),
+        .engineVersion      = args.engineVers,          // .engineVersion: u32 = @import("std").mem.zeroes(u32),
+        .apiVersion         = zvk.cfg.default.version,  // .apiVersion: u32 = @import("std").mem.zeroes(u32),
+        }; //:: VkApplicationInfo{ ... }
     } //:: zvk.App.defaults
   }; //:: zvk.App
 
@@ -127,8 +129,37 @@ pub const zvk = struct {
   // @section Instance
   //____________________________
   pub const Instance = struct {
+    A    :zvk.Allocator,
     ct   :vk.instance.T,
     cfg  :vk.instance.Cfg,
+
+    const glfw = @import("./zglfw.zig");
+    pub fn create (
+        app : zvk.App.Cfg,
+        A   : zvk.Allocator,
+      ) !zvk.Instance {
+      // Get the Extensions
+      var extCount :u32= 0;
+      const exts = glfw.vk.instance.getExts(&extCount);
+      // Get the Validation Layers
+      // Generate the result
+      var result = zvk.Instance{.ct= undefined,
+        .A                         = A,
+        .cfg                       = vk.instance.Cfg{
+          .sType                   = vk.stype.InstanceInfo,            // sType: VkStructureType = @import("std").mem.zeroes(VkStructureType),
+          .pNext                   = null,                             // pNext: ?*const anyopaque = @import("std").mem.zeroes(?*const anyopaque),
+          .flags                   = vk.flags.InstanceCreate.toInt(.{  // flags: VkInstanceCreateFlags = @import("std").mem.zeroes(VkInstanceCreateFlags),
+            .enumeratePortability  = true,
+            }), //:: flags
+          .pApplicationInfo        = &app,                             // pApplicationInfo: [*c]const VkApplicationInfo = @import("std").mem.zeroes([*c]const VkApplicationInfo),
+          .enabledLayerCount       = 0,                                // enabledLayerCount: u32 = @import("std").mem.zeroes(u32),
+          .ppEnabledLayerNames     = null,                             // ppEnabledLayerNames: [*c]const [*c]const u8 = @import("std").mem.zeroes([*c]const [*c]const u8),
+          .enabledExtensionCount   = extCount,                         // enabledExtensionCount: u32 = @import("std").mem.zeroes(u32),
+          .ppEnabledExtensionNames = exts,                             // ppEnabledExtensionNames: [*c]const [*c]const u8 = @import("std").mem.zeroes([*c]const [*c]const u8),
+        }}; //:: zvk.Instance{ ... }
+      try vk.instance.create(&result.cfg, result.A.vk, &result.ct);  //:: vkCreateInstance
+      return result;
+    } //:: zvk.Instance.create
   }; //:: zvk.Instance
 }; //:: zvk
 
@@ -168,14 +199,20 @@ pub const zgpu = struct {
     pub fn update (gpu :*Gpu) void {_=gpu;}
     pub fn term   (gpu :*Gpu) void {_=gpu;}
 
-    pub fn init (_:struct {
+    pub fn init (args:struct {
         appName    : zvk.String  = zgpu.cfg.default.appName,
         appVers    : zvk.Version = zgpu.cfg.default.appVers,
         engineName : zvk.String  = zgpu.cfg.default.engineName,
         engineVers : zvk.Version = zgpu.cfg.default.engineVers, },
         A          : zvk.Allocator,
       ) !zgpu.Gpu {
-      const result = Gpu{.A= A, .instance= undefined};
+      var result = Gpu{.A= A, .instance= undefined};
+      result.instance = try zvk.Instance.create(zvk.App.new(.{
+        .appName    = args.appName,
+        .appVers    = args.appVers,
+        .engineName = args.engineName,
+        .engineVers = args.engineVers,
+        }), A);
       return result;
     } //:: Gpu.init
   }; //:: Gpu
