@@ -2,7 +2,7 @@
 //  zsys  |  Copyright (C) Ivan Mar (sOkam!)  |  GNU GPLv3 or later  :
 //:___________________________________________________________________
 // @deps External
-const glfw = @import("./glfw.zig");
+const glfw = @import("../zglfw.zig");
 // @deps z*std dependencies
 const zstd = @import("../zstd.zig");
 const cstr = zstd.cstr;

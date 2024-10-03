@@ -4,7 +4,7 @@
 // @deps std
 const std = @import("std");
 // @deps External
-const glfw = @import("./glfw.zig");
+const glfw = @import("../zglfw.zig");
 // @deps z*sys
 const cb   = @import("./cb.zig");
 

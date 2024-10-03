@@ -2,7 +2,7 @@
 //  zsys  |  Copyright (C) Ivan Mar (sOkam!)  |  GNU GPLv3 or later  :
 //:___________________________________________________________________
 // External dependencies
-const glfw = @import("./glfw.zig");
+const glfw = @import("../zglfw.zig");
 // z*sys dependencies
 const cb   = @import("./cb.zig");
 const w    = @import("./window.zig");
