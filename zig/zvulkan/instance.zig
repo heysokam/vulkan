@@ -8,8 +8,10 @@ pub const instance = @This();
 const c = @import("../lib/vulkan.zig");
 const check = @import("./result.zig");
 
+
 pub const T        = c.VkInstance;
 pub const Cfg      = c.VkInstanceCreateInfo;
+pub const Instance = instance.T;
 
 pub const CreateError = error{
   OutOfHostMemory,
@@ -24,10 +26,15 @@ pub const CreateError = error{
 pub fn create (
     info : *const c.VkInstanceCreateInfo,
     A    : ?*const c.VkAllocationCallbacks,
-    I    : *c.VkInstance
+    I    : *c.VkInstance,
   ) !void {
   try check.ok(c.vkCreateInstance(info, A, I));
-}  //:: vkCreateInstance(pCreateInfo: [*c]const VkInstanceCreateInfo, pAllocator: [*c]const VkAllocationCallbacks, pInstance: [*c]VkInstance) VkResult;
-pub const destroy  = c.vkDestroyInstance;
-pub const Instance = instance.T;
+} //:: vkCreateInstance(pCreateInfo: [*c]const VkInstanceCreateInfo, pAllocator: [*c]const VkAllocationCallbacks, pInstance: [*c]VkInstance) VkResult;
+
+pub fn destroy  (
+    I : c.VkInstance,
+    A : ?*const c.VkAllocationCallbacks,
+  ) void {
+  c.vkDestroyInstance(I, A);
+} //:: vkDestroyInstance(instance: VkInstance, pAllocator: [*c]const VkAllocationCallbacks) void;
 

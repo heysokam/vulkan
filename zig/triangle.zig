@@ -139,6 +139,8 @@ pub const zvk = struct {
         A   : zvk.Allocator,
       ) !zvk.Instance {
       // Get the Extensions
+      // TODO: Mac support with VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME
+      //     : https://vulkan-tutorial.com/en/Drawing_a_triangle/Setup/Instance
       var extCount :u32= 0;
       const exts = glfw.vk.instance.getExts(&extCount);
       // Get the Validation Layers
@@ -160,6 +162,7 @@ pub const zvk = struct {
       try vk.instance.create(&result.cfg, result.A.vk, &result.ct);  //:: vkCreateInstance
       return result;
     } //:: zvk.Instance.create
+    pub fn destroy (I :*zvk.Instance) void { vk.instance.destroy(I.ct, I.A.vk); }
   }; //:: zvk.Instance
 }; //:: zvk
 
@@ -197,7 +200,9 @@ pub const zgpu = struct {
     A        :zvk.Allocator,
     instance :zvk.Instance,
     pub fn update (gpu :*Gpu) void {_=gpu;}
-    pub fn term   (gpu :*Gpu) void {_=gpu;}
+    pub fn term   (gpu :*Gpu) void {
+      gpu.instance.destroy();
+    }
 
     pub fn init (args:struct {
         appName    : zvk.String  = zgpu.cfg.default.appName,
