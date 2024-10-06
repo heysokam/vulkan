@@ -4,9 +4,12 @@
 // @fileoverview Instance Tools
 //_________________________________|
 pub const instance = @This();
+// @deps std
+const std = @import("std");
 // @deps vulkan
-const c = @import("../lib/vulkan.zig");
+const c     = @import("../lib/vulkan.zig");
 const check = @import("./result.zig");
+const vk    = @import("./types.zig");
 
 
 pub const T        = c.VkInstance;
@@ -31,10 +34,5 @@ pub fn create (
   try check.ok(c.vkCreateInstance(info, A, I));
 } //:: vkCreateInstance(pCreateInfo: [*c]const VkInstanceCreateInfo, pAllocator: [*c]const VkAllocationCallbacks, pInstance: [*c]VkInstance) VkResult;
 
-pub fn destroy  (
-    I : c.VkInstance,
-    A : ?*const c.VkAllocationCallbacks,
-  ) void {
-  c.vkDestroyInstance(I, A);
-} //:: vkDestroyInstance(instance: VkInstance, pAllocator: [*c]const VkAllocationCallbacks) void;
+pub const destroy = c.vkDestroyInstance; //:: vkDestroyInstance(instance: VkInstance, pAllocator: [*c]const VkAllocationCallbacks) void;
 
