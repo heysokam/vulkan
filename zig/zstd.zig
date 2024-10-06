@@ -5,6 +5,13 @@
 const std  = @import("std");
 
 //______________________________________
+// @section Operating System Aliases
+//____________________________
+pub const linux = @import("builtin").os.tag == .linux;
+pub const win   = @import("builtin").os.tag == .windows;
+pub const macos = @import("builtin").os.tag.isDarwin();
+
+//______________________________________
 // @section Type Aliases
 //____________________________
 pub const cstr = []const u8;
