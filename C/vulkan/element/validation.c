@@ -14,7 +14,7 @@ cstr const* validationLayers = NULL;
 
 void cvk_validate_chkSupport(void) {
   if (!cdk_debug) return;
-  // Get the layer names with glfw
+  // Get the layer names
   u32 count;
   vkEnumerateInstanceLayerProperties(&count, NULL);
   VkLayerProperties* layers = (VkLayerProperties*)alloc(sizeof(VkLayerProperties), count);

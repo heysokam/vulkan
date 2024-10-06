@@ -32,7 +32,7 @@ pub fn main () !void {
   var gpu = try zgpu.init(.{
     .appName    = appName,
     .appVers    = zgpu.version.new(0, 0, 1),
-    .engineName = "Hello z*gpu | Triangle Engine",
+    .engineName = "z*gpu | Triangle Engine",
     .engineVers = zgpu.version.new(0, 0, 1),
     }, A);
   while (!sys.close()) {
@@ -101,6 +101,23 @@ pub const zvk = struct {
       pub const engineVers = zvk.version.new(0, 0, 0);
     }; //:: zvk.cfg.default
   }; //:: zvk.cfg
+
+  //______________________________________
+  // @section Validation
+  //____________________________
+  pub const validation = struct {
+    pub const active = if (zstd.debug) true else false;
+    pub const layers = if (zvk.validation.active) .{vk.validation.LayerName} else .{};
+    pub fn checkSupport (A :zvk.Allocator) !void {_=A;
+      if (!zvk.validation.active) return;
+      // Get the layer names
+      // Check if the requested names exist in the list available layers
+      search: {
+        break :search;
+      }
+    }
+
+  }; //:: zvk.validation
 
   //______________________________________
   // @section Application
