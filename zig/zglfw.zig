@@ -1,8 +1,14 @@
 //:____________________________________________________________________
 //  zglfw  |  Copyright (C) Ivan Mar (sOkam!)  |  GNU GPLv3 or later  :
 //:____________________________________________________________________
+const std = @import("std");
 const glfw = @This();
 const c = @import("./lib/glfw.zig");
+
+pub const String                 = [:0]const u8;
+pub const StringList             = std.ArrayList(glfw.String);
+pub const CString                = [*:0]const u8;
+pub const CStringList            = std.ArrayList(glfw.CString);
 
 pub const Window                 = c.GLFWwindow;
 pub const KeyFunc                = c.GLFWkeyfun;
@@ -368,8 +374,17 @@ pub const vk                     = struct {
   pub fn supported               () bool { return c.glfwVulkanSupported() == glfw.True; }
   pub const getProc              = c.glfwGetProcAddress;
   pub const instance             = struct {
-    pub const getExts            = c.glfwGetRequiredInstanceExtensions;
     pub const getProc            = c.glfwGetInstanceProcAddress;
+    const Extensions             = CStringList;
+    pub fn getExts (A :std.mem.Allocator) !vk.instance.Extensions {
+      var count :u32= 0;
+      const exts = c.glfwGetRequiredInstanceExtensions(&count);
+      var result = Extensions.init(A);
+      // TODO: How to convert glfw.CString to glfw.String back and forth
+      // for (exts[0..count]) | ext | { try result.append(std.mem.sliceTo(ext, 0)); }
+      for (exts[0..count]) | ext | { try result.append(std.mem.span(ext)); }
+      return result;
+    }
   }; //:: vk.instance
   pub const surface              = struct {
     pub const create             = c.glfwCreateWindowSurface;
