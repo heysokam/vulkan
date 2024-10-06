@@ -134,15 +134,17 @@ pub const zvk = struct {
     cfg  :vk.instance.Cfg,
 
     const glfw = @import("./zglfw.zig");
-    pub fn create (
-        app : zvk.App.Cfg,
-        A   : zvk.Allocator,
+    pub fn create (in:struct {
+        appName    : zvk.String  = zvk.cfg.default.appName,
+        appVers    : zvk.Version = zvk.cfg.default.appVers,
+        engineName : zvk.String  = zvk.cfg.default.engineName,
+        engineVers : zvk.Version = zvk.cfg.default.engineVers, },
+        A          : zvk.Allocator,
       ) !zvk.Instance {
       // Get the Extensions
-      // TODO: Mac support with VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME
-      //     : https://vulkan-tutorial.com/en/Drawing_a_triangle/Setup/Instance
-      var extCount :u32= 0;
-      const exts = glfw.vk.instance.getExts(&extCount);
+      var exts = try glfw.vk.instance.getExts(A.zig);
+      if (zstd.macos) try exts.append(vk.extensions.PortabilityEnumeration); // Mac support with VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME : https://vulkan-tutorial.com/en/Drawing_a_triangle/Setup/Instance
+      // try vk.extensions.instance.supported(exts); // TODO: vk.extensions.instance.supported
       // Get the Validation Layers
       // Generate the result
       var result = zvk.Instance{.ct= undefined,
@@ -151,13 +153,18 @@ pub const zvk = struct {
           .sType                   = vk.stype.InstanceInfo,            // sType: VkStructureType = @import("std").mem.zeroes(VkStructureType),
           .pNext                   = null,                             // pNext: ?*const anyopaque = @import("std").mem.zeroes(?*const anyopaque),
           .flags                   = vk.flags.InstanceCreate.toInt(.{  // flags: VkInstanceCreateFlags = @import("std").mem.zeroes(VkInstanceCreateFlags),
-            .enumeratePortability  = true,
+            .enumeratePortability  = if (zstd.macos) true else false,
             }), //:: flags
-          .pApplicationInfo        = &app,                             // pApplicationInfo: [*c]const VkApplicationInfo = @import("std").mem.zeroes([*c]const VkApplicationInfo),
+          .pApplicationInfo        = &zvk.App.new(.{
+            .appName               = in.appName,
+            .appVers               = in.appVers,
+            .engineName            = in.engineName,
+            .engineVers            = in.engineVers,
+            }), //:: pApplicationInfo                                  // pApplicationInfo: [*c]const VkApplicationInfo = @import("std").mem.zeroes([*c]const VkApplicationInfo),
           .enabledLayerCount       = 0,                                // enabledLayerCount: u32 = @import("std").mem.zeroes(u32),
           .ppEnabledLayerNames     = null,                             // ppEnabledLayerNames: [*c]const [*c]const u8 = @import("std").mem.zeroes([*c]const [*c]const u8),
-          .enabledExtensionCount   = extCount,                         // enabledExtensionCount: u32 = @import("std").mem.zeroes(u32),
-          .ppEnabledExtensionNames = exts,                             // ppEnabledExtensionNames: [*c]const [*c]const u8 = @import("std").mem.zeroes([*c]const [*c]const u8),
+          .enabledExtensionCount   = @intCast(exts.items.len),         // enabledExtensionCount: u32 = @import("std").mem.zeroes(u32),
+          .ppEnabledExtensionNames = exts.items.ptr,                   // ppEnabledExtensionNames: [*c]const [*c]const u8 = @import("std").mem.zeroes([*c]const [*c]const u8),
         }}; //:: zvk.Instance{ ... }
       try vk.instance.create(&result.cfg, result.A.vk, &result.ct);  //:: vkCreateInstance
       return result;
@@ -212,12 +219,12 @@ pub const zgpu = struct {
         A          : zvk.Allocator,
       ) !zgpu.Gpu {
       var result = Gpu{.A= A, .instance= undefined};
-      result.instance = try zvk.Instance.create(zvk.App.new(.{
+      result.instance = try zvk.Instance.create(.{
         .appName    = args.appName,
         .appVers    = args.appVers,
         .engineName = args.engineName,
         .engineVers = args.engineVers,
-        }), A);
+        }, A);
       return result;
     } //:: Gpu.init
   }; //:: Gpu
