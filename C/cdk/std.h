@@ -2,6 +2,10 @@
 //  cdk  |  Copyright (C) Ivan Mar (sOkam!)  |  GNU GPLv3 or later  :
 //:__________________________________________________________________
 #pragma once
+// C++ Support
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -18,6 +22,7 @@ typedef float         f32;
 typedef double        f64;
 typedef char*         str;
 typedef const char*   cstr;
+typedef u8            TODO;
 
 //__________________________________________________________
 // General Purpose
@@ -108,3 +113,9 @@ u32 cdk_makeVersion(const u32 M, const u32 m, const u32 p);
 //_________________________________//
 #  include "./std.c"
 #endif  // cdk_std
+
+
+//:: C++ Support
+#ifdef __cplusplus
+}
+#endif

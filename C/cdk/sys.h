@@ -2,28 +2,37 @@
 //  cvk  |  Copyright (C) Ivan Mar (sOkam!)  |  GNU GPLv3 or later  :
 //:__________________________________________________________________
 #pragma once
-// External dependencies
+// C++ Support
+#ifdef __cplusplus
+extern "C" {
+#endif
+// @deps External
 #include <GLFW/glfw3.h>
-// cdk dependencies
+// @deps cdk
 #include "./std.h"
 
+/// Graphics API Selection option
+typedef enum csys_api_e { csys_api_none, csys_api_opengl  } csys_api;
+#define csys_api_vulkan csys_api_none
+#define csys_api_wgpu csys_api_none
+
 /// Contains the window context and its properties.
-typedef struct cWindow_s {
+typedef struct csys_Window_s {
   GLFWwindow *ct;
   u32 width;
   u32 height;
   str title;
-} cWindow;
+} csys_Window;
 
 /// Dummy Handle for the input functions
-typedef Handle cInput;
+typedef Handle csys_Input;
 
 /// System Object. Contains the Window and Input objects.
 typedef struct System_s {
-  cWindow win;
-  cInput  inp;
+  csys_api api;
+  csys_Window win;
+  csys_Input  inp;
 } System;
-
 
 //______________________________________
 // Function input arguments
@@ -49,6 +58,7 @@ typedef struct i_init_args_s {
 } i_init_args;
 
 typedef struct csys_init_args_s {
+  csys_api    api;
   w_init_args win;
   i_init_args inp;
 } csys_init_args;
@@ -71,20 +81,20 @@ void i_key(GLFWwindow* win, int key, int code, int action, int mods);
 //____________________________
 
 /// Initializes and returns a window.
-cWindow w_init(w_init_args in);
+csys_Window w_init(w_init_args in, csys_api api);
 /// Gets the current size of the given window, and stores it in its .size field.
-void w_updateSize(cWindow win);
+void w_updateSize(csys_Window win);
 /// Runs the logic required for rendering one frame with this window.
-void w_update(cWindow win);
+void w_update(csys_Window win, csys_api api);
 /// Returns true if the window has been marked for closing.
-bool w_close(cWindow w);
+bool w_close(csys_Window w);
 /// Terminates the window.
-void w_term(cWindow w);
+void w_term(csys_Window w);
 
 /// Initializes and returns an Input handle.
-cInput i_init(cWindow win, i_init_args in);
+csys_Input i_init(csys_Window win, i_init_args in);
 /// Runs the logic required for getting proper inputs from the System.
-void i_update(cInput i);
+void i_update(csys_Input i);
 
 /// Initializes and returns a System object
 System csys_init(csys_init_args in);
@@ -102,3 +112,8 @@ void csys_term(System* sys);
 #include "./window.c"
 #include "./input.c"
 #endif // cvk_system
+
+//:: C++ Support
+#ifdef __cplusplus
+}
+#endif
