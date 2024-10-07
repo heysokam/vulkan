@@ -12,13 +12,13 @@ pub const CStringList            = std.ArrayList(glfw.CString);
 
 pub const Window                 = c.GLFWwindow;
 pub const KeyFunc                = c.GLFWkeyfun;
-pub fn    init                   () bool {return c.glfwInit() == glfw.True; }
+pub fn    init                   () bool { return c.glfwInit() == glfw.True; }
 pub const term                   = c.glfwTerminate;
 pub const window                 = struct {
   pub const hint                 = c.glfwWindowHint;
   pub const create               = c.glfwCreateWindow;
   pub const destroy              = c.glfwDestroyWindow;
-  pub fn    close                (W :?*glfw.Window) bool {return c.glfwWindowShouldClose(W) == glfw.True; }
+  pub fn    close                (W :?*glfw.Window) bool { return c.glfwWindowShouldClose(W) == glfw.True; }
   pub const setClose             = c.glfwSetWindowShouldClose;
   pub const size                 = c.glfwGetWindowSize;
 }; //:: window
