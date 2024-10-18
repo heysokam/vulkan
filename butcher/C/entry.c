@@ -1,10 +1,3 @@
-//:__________________________________________________________________
-//  cvk  |  Copyright (C) Ivan Mar (sOkam!)  |  GNU GPLv3 or later  :
-//:__________________________________________________________________
-// Hello Vulkan Context                                   |
-// Creates a window with GLFW,                            |
-// and creates the most minimal vulkan context possible.  |
-//________________________________________________________|
 #include "./cvk.h"
 
 #include <stdio.h>
