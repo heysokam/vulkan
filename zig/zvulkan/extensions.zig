@@ -8,11 +8,14 @@ const c     = @import("../lib/vulkan.zig");
 const vk    = @import("./types.zig");
 const check = @import("./result.zig");
 
-pub const PortabilityEnumeration = c.VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME;
-
 const Extensions = vk.CStringList;
 
 pub const extensions = struct {
+  pub const Properties  = c.VkExtensionProperties;
+  pub const Portability = c.VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME;
+  pub const DebugUtils  = c.VK_EXT_DEBUG_UTILS_EXTENSION_NAME;
+  pub const Swapchain   = c.VK_KHR_SWAPCHAIN_EXTENSION_NAME;
+
   pub const instance = struct {
     pub fn all (A :std.mem.Allocator) !Extensions {
       var count :u32= 0;

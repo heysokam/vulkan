@@ -3,12 +3,14 @@
 //:______________________________________________________________________
 // @fileoverview Surface Tools
 //_________________________________|
-pub const surface = @This();
 // @deps vulkan
 const c = @import("../lib/vulkan.zig");
 
+pub const surface = struct {
+  pub const T            = c.VkSurfaceKHR;
+  pub const Capabilities = c.VkSurfaceCapabilitiesKHR;
+  pub const Format       = c.VkSurfaceFormatKHR;
+  pub const destroy      = c.vkDestroySurfaceKHR;
+}; //:: vk.surface
 pub const Surface = surface.T;
-pub const T = c.VkSurfaceKHR;
-// pub const create = c.vkCreateInstance;
-pub const destroy = c.vkDestroySurfaceKHR;
 

@@ -12,19 +12,10 @@ const check = @import("./result.zig");
 const vk    = @import("./types.zig");
 
 
-pub const T        = c.VkInstance;
 pub const Cfg      = c.VkInstanceCreateInfo;
+pub const T        = vk.Instance;
 pub const Instance = instance.T;
-
-pub const CreateError = error{
-  OutOfHostMemory,
-  OutOfDeviceMemory,
-  InitializationFailed,
-  LayerNotPresent,
-  ExtensionNotPresent,
-  IncompatibleDriver,
-  Unknown,
-};
+pub const getProc  = c.vkGetInstanceProcAddr;
 
 pub fn create (
     info : *const c.VkInstanceCreateInfo,
