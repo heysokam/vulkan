@@ -1,6 +1,10 @@
 //:_____________________________________________________________________________________
 //  Vulkan: All-the-Things  |  Copyright (C) Ivan Mar (sOkam!)  |  GNU GPLv3 or later  :
 //:_____________________________________________________________________________________
+// @deps zstd
+const zstd = @import("./build/confy/src/lib/zstd.zig");
+const sh   = zstd.shell;
+const echo = zstd.echo;
 // @deps confy
 const confy = @import("./build/confy.zig");
 const Name  = confy.Name;
@@ -26,7 +30,7 @@ const P = confy.Package.Info{
 
 
 const dir = struct {
-  const bin = "./bin";
+  const bin = "bin";
   const C   = "./c";
   const Cpp = "./cpp";
   const Zig = "./zig";
@@ -34,8 +38,9 @@ const dir = struct {
 
 const run = struct {
   const C    = true;
-  const Cpp  = true;
-  const Zig  = true;
+  const Cpp  = false;
+  const Zig  = false;
+  const Rust = false;
 }; //:: run
 
 
@@ -62,55 +67,19 @@ pub fn main () !u8 {
     .entry   = dir.Zig++"/entry.zig",
     .version = P.version,
     }, &builder);
+  //__________________
+  const rust = struct {
+    const bin = "vk_rust";
+    const trg = dir.bin++"/debug/"++bin;
+    fn build (B :*confy.Confy) !void { echo("ᛝ confy: Building "++trg); try sh.run(&.{"cargo", "build", "--target-dir", dir.bin, "--bin", bin}, B.A.allocator()); }
+    fn run   (B :*confy.Confy) !void { echo("ᛝ confy: Running "++trg); try sh.run(&.{trg}, B.A.allocator()); }
+  }; //:: rust
 
   P.report();
-  if (run.C  ) { try C.build();   try C.run();   }
-  if (run.Cpp) { try Cpp.build(); try Cpp.run(); }
-  if (run.Zig) { try Zig.build(); try Zig.run(); }
+  if (run.C   ) { try C.build();   try C.run();   }
+  if (run.Cpp ) { try Cpp.build(); try Cpp.run(); }
+  if (run.Zig ) { try Zig.build(); try Zig.run(); }
+  if (run.Rust) { try rust.build(&builder); try rust.run(&builder); }
   return 0;
 }
 
-
-// #!/bin/sh
-// set -eu
-//
-// # Folders: General
-// dir_bin=./bin
-//
-// # Folders: Code
-// dir_c=./c
-// dir_cpp=./cpp
-// dir_zig=./zig
-// dir_rust=./rust
-//
-// # Source Code
-// src_c="$dir_c/entry.c"
-// src_cpp="$dir_cpp/entry.cpp"
-// src_zig="$dir_zig/entry.zig"
-// src_rust="$dir_rust/entry.rs"
-//
-// # Target Binaries
-// trg_c=$dir_bin/vk_c
-// trg_cpp=$dir_bin/vk_cpp
-// trg_zig=$dir_bin/vk_zig
-// trg_rust=$dir_bin/vk_rust
-//
-// # Compilers
-// zig="$dir_bin/.zig/zig"
-// zig_cc="$zig cc"
-// zig_cpp="$zig c++"
-// rust="cargo build"
-//
-// # Build
-// clear
-// echo "Building C ..."
-// $zig_cc $src_c -o $trg_c
-// echo "Building C++ ..."
-// $zig_cpp $src_cpp -o $trg_cpp
-//
-// # Run
-// echo "Running C ..."
-// $trg_c
-// echo "Running C++ ..."
-// $trg_cpp
-//

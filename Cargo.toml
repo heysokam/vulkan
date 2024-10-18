@@ -3,7 +3,7 @@ name = "rust"
 version = "0.1.0"
 edition = "2021"
 [[bin]]
-name = "rust"
+name = "vk_rust"
 path = "rust/entry.rs"
 
 
