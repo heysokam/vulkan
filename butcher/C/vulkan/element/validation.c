@@ -87,3 +87,4 @@ void cvk_validate_destroyDebug(VkInstance instance, VkDebugMessenger* dbg, VkAll
   destroyMessenger(instance, *dbg, allocator);
   free(dbg);
 }
+

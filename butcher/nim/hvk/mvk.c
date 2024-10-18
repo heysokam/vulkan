@@ -1026,24 +1026,24 @@ mvk_Swapchain mvk_swapchain_create (mvk_Device* const device, VkSurfaceKHR const
   result.views = (VkImageView*)calloc(result.imgCount, sizeof(VkImageView));
   for(size_t id = 0; id < result.imgCount; ++id) {
     code = vkCreateImageView(device->logical, &(VkImageViewCreateInfo){
-      .sType= VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
-      .pNext= NULL,
-      .flags= (VkImageViewCreateFlags)0,
-      .image= result.images[id],
-      .viewType= VK_IMAGE_VIEW_TYPE_2D,
-      .format= result.format.format,
-      .components= (VkComponentMapping){
-        .r= 0,
-        .g= 0,
-        .b= 0,
-        .a= 0,
+      .sType            = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
+      .pNext            = NULL,
+      .flags            = (VkImageViewCreateFlags)0,
+      .image            = result.images[id],
+      .viewType         = VK_IMAGE_VIEW_TYPE_2D,
+      .format           = result.format.format,
+      .components       = (VkComponentMapping){
+        .r              = 0,
+        .g              = 0,
+        .b              = 0,
+        .a              = 0,
         },
-      .subresourceRange= (VkImageSubresourceRange){
-        .aspectMask= VK_IMAGE_ASPECT_COLOR_BIT,
-        .baseMipLevel= 0,
-        .levelCount= 1,
-        .baseArrayLayer= 0,
-        .layerCount= 1,
+      .subresourceRange = (VkImageSubresourceRange){
+        .aspectMask     = VK_IMAGE_ASPECT_COLOR_BIT,
+        .baseMipLevel   = 0,
+        .levelCount     = 1,
+        .baseArrayLayer = 0,
+        .layerCount     = 1,
         },
       }, allocator, &result.views[id]);
     if (code != VK_SUCCESS) {
