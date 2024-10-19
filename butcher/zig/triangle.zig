@@ -41,7 +41,7 @@ pub fn main () !void {
     }
   gpu.term();
   sys.term();
-} //:: _main
+} //:: main
 
 
 
