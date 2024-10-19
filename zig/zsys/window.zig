@@ -34,3 +34,4 @@ pub fn init(W :u32, H :u32, title :[]const u8) !Window {
   _ = glfw.cb.setResize(result.ct, null);
   return result;
 }
+
