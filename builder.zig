@@ -105,7 +105,7 @@ pub fn main () !u8 {
 // @section Dependencies: GLFW
 //____________________________
 const glfw = struct {
-  const flags = .{ .ld= &.{"-Ilib/glfw/include", "-Llib/glfw/build/src", "-lm", "-lglfw3", "-lvulkan"}, };
+  const flags = .{ .cc=&.{"-I./lib/glfw/include"}, .ld= &.{"-L./lib/glfw/build/src", "-lm", "-lglfw3", "-lvulkan"}, };
 
   fn build (b :*confy.Confy) !void {
     const srcDir = dir.glfw;
