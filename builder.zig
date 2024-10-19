@@ -39,8 +39,8 @@ const dir = struct {
   const Zig = "./zig";
 }; //:: dir
 const run = struct {
-  const C    = true;
-  const Cpp  = false;
+  const C    = false;
+  const Cpp  = true;
   const Zig  = false;
   const Rust = false;
 }; //:: run
@@ -66,6 +66,7 @@ pub fn main () !u8 {
     .trg     = "vk_cpp",
     .entry   = dir.Cpp++"/entry.cpp",
     .version = P.version,
+    .flags   = .{ .ld = &.{"-lglfw", "-lvulkan"}, }
     }, &builder);
   //__________________
   var Zig = try confy.Program(.{

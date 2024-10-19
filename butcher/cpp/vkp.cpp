@@ -124,29 +124,3 @@ inline u32 apiVersion(const u32 major, const u32 minor, const u32 patch) { retur
   }
 }  // namespace cvk
 
-namespace cfg {
-const str  label      = "vk+";
-const u32  W          = 960;
-const u32  H          = 540;
-const bool resizable  = false;
-const u32  vkpVers    = cvk::makeVersion(0, 0, 1);
-const u32  appVers    = vkpVers;
-const u32  engineVers = vkpVers;
-}  // namespace cfg
-
-
-//__________________________________________________________________
-/// Entry Point
-//________________________________________________
-using namespace cvk;
-int main(int argc, const char* argv[]) {
-  opt::parse(argc, argv);
-  echo(str("Hello ") + cfg::label);
-  Sys sys(cfg::label + " | Example", cfg::W, cfg::H, cfg::resizable);
-  Gpu gpu(cfg::label, cfg::appVers, cfg::engineVers, &sys.win);
-  while (!sys.close()) {
-    sys.update();
-    gpu.update();
-  }
-  return 0;
-}
