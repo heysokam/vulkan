@@ -2,10 +2,6 @@
 //  cdk  |  Copyright (C) Ivan Mar (sOkam!)  |  GNU GPLv3 or later  :
 //:__________________________________________________________________
 #pragma once
-// C++ Support
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -68,7 +64,7 @@ cstr* arr_cstr_merge(cstr* one, size_t len1, cstr* two, size_t len2);
 // Strings: cstr
 //______________________________________
 
-#include "./mem.h"
+#include "./cmem.h"
 /// Compares two strings and returns a boolean of whether or not they are the same
 #define str_equal(a,b) (bool)(strcmp((a),(b)) == 0)
 cstr* arr_cstr_merge(cstr* a, size_t len_a, cstr* b, size_t len_b);
@@ -107,15 +103,3 @@ u32 cdk_makeVersion(const u32 M, const u32 m, const u32 p);
 #define cdk_debug true
 #endif
 
-//_________________________________________________
-/// Header Only | Define this in only one file.  //
-#if defined cdk_std  //
-//_________________________________//
-#  include "./std.c"
-#endif  // cdk_std
-
-
-//:: C++ Support
-#ifdef __cplusplus
-}
-#endif

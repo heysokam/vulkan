@@ -1,9 +1,7 @@
 //:__________________________________________________________________
 //  cdk  |  Copyright (C) Ivan Mar (sOkam!)  |  GNU GPLv3 or later  :
 //:__________________________________________________________________
-#if !defined cdk_std
-#  include "./std.h"
-#endif
+#include "./cstd.h"
 
 u32 cdk_makeVersion(const u32 M, const u32 m, const u32 p) { return (u32)(M << 22U) | ((u32)(m << 12U)) | ((u32)(p)); }
 
@@ -29,4 +27,5 @@ cstr* arr_cstr_merge(cstr* one, size_t len1, cstr* two, size_t len2) { // clang-
   cpy(result+len1, two, len2 * sizeof(*two));
   return (cstr*)result;
 } // clang-format on
+
 

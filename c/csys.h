@@ -1,15 +1,13 @@
+
 //:__________________________________________________________________
 //  cvk  |  Copyright (C) Ivan Mar (sOkam!)  |  GNU GPLv3 or later  :
 //:__________________________________________________________________
 #pragma once
-// C++ Support
-#ifdef __cplusplus
-extern "C" {
-#endif
 // @deps External
 #include <GLFW/glfw3.h>
 // @deps cdk
-#include "./std.h"
+#include "./cstd.h"
+
 
 /// Graphics API Selection option
 typedef enum csys_api_e { csys_api_none, csys_api_opengl  } csys_api;
@@ -28,11 +26,11 @@ typedef struct csys_Window_s {
 typedef Handle csys_Input;
 
 /// System Object. Contains the Window and Input objects.
-typedef struct System_s {
+typedef struct csys_System_s {
   csys_api api;
   csys_Window win;
   csys_Input  inp;
-} System;
+} csys_System;
 
 //______________________________________
 // Function input arguments
@@ -97,23 +95,11 @@ csys_Input i_init(csys_Window win, i_init_args in);
 void i_update(csys_Input i);
 
 /// Initializes and returns a System object
-System csys_init(csys_init_args in);
+csys_System csys_init(csys_init_args in);
 /// Runs the logic required for updating the Window and Input of the System.
-void csys_update(System* sys);
+void csys_update(csys_System* sys);
 /// Returns true if the System has been marked for closing.
-bool csys_close(System* sys); 
+bool csys_close(csys_System* sys); 
 /// Terminates the System.
-void csys_term(System* sys);
+void csys_term(csys_System* sys);
 
-//_________________________________________________
-/// Header Only | Define this in only one file.  //
-#if defined cvk_system //
-//_________________________________//
-#include "./window.c"
-#include "./input.c"
-#endif // cvk_system
-
-//:: C++ Support
-#ifdef __cplusplus
-}
-#endif

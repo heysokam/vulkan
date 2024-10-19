@@ -1,10 +1,7 @@
 //:__________________________________________________________________
 //  cdk  |  Copyright (C) Ivan Mar (sOkam!)  |  GNU GPLv3 or later  :
 //:__________________________________________________________________
-#include "std.h"
-#if !defined cdk_system
-#  include "./sys.h"
-#endif
+#include "./csys.h"
 
 //__________________________________________________________
 // Window
@@ -86,23 +83,24 @@ void i_update(csys_Input i) {
 // System
 //______________________________________
 
-System csys_init(csys_init_args in) {
+csys_System csys_init(csys_init_args in) {
   glfwInit();
-  System result;
+  csys_System result;
   result.win = w_init(in.win, in.api);
   result.inp = i_init(result.win, in.inp);
   return result;
 }
 
-void csys_update(System* sys) {
+void csys_update(csys_System* sys) {
   i_update(sys->inp);
   w_update(sys->win, sys->api);
 }
 
-bool csys_close(System* sys) { return w_close(sys->win); }
+bool csys_close(csys_System* sys) { return w_close(sys->win); }
 
-void csys_term(System* sys) {
+void csys_term(csys_System* sys) {
   w_term(sys->win);
   glfwTerminate();
 }
+
 

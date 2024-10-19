@@ -29,13 +29,15 @@ const P = confy.Package.Info{
   }; //:: P
 
 
+//______________________________________
+// @section Build: Configuration
+//____________________________
 const dir = struct {
   const bin = "bin";
   const C   = "./c";
   const Cpp = "./cpp";
   const Zig = "./zig";
 }; //:: dir
-
 const run = struct {
   const C    = true;
   const Cpp  = false;
@@ -44,6 +46,9 @@ const run = struct {
 }; //:: run
 
 
+//______________________________________
+// @section Build: Entry Point
+//____________________________
 pub fn main () !u8 {
   // Initialize the confy builder
   var builder = try confy.init(); defer builder.term();
@@ -54,6 +59,7 @@ pub fn main () !u8 {
     .trg     = "vk_c",
     .entry   = dir.C++"/entry.c",
     .version = P.version,
+    .flags   = .{ .ld = &.{"-lglfw", "-lvulkan"}, }
     }, &builder);
   //__________________
   var Cpp = try confy.Program(.{

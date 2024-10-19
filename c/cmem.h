@@ -2,10 +2,6 @@
 //  cdk  |  Copyright (C) Ivan Mar (sOkam!)  |  GNU GPLv3 or later  :
 //:__________________________________________________________________
 #pragma once
-// C++ Support
-#ifdef __cplusplus
-extern "C" {
-#endif
 // @deps std
 #include <string.h>
 #include <stdlib.h>
@@ -23,7 +19,3 @@ void* alloc(size_t count, size_t bytes);
 /// Alias for memcpy
 #define cpy memcpy
 
-//:: C++ Support
-#ifdef __cplusplus
-}
-#endif
