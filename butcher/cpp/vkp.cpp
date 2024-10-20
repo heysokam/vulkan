@@ -17,36 +17,36 @@ typedef SwapchainT* Swapchain;
 
 class Gpu {
  public:
-  Gpu(str label, u32 appVers, u32 engineVers, w::Window* win, cvk::Allocator allocator);
-  ~Gpu();
-  void update(void);
+  /* Gpu(str label, u32 appVers, u32 engineVers, w::Window* win, cvk::Allocator allocator); */
+  /* ~Gpu(); */
+  /* void update(void); */
 
  private:
-  Gpu*                m = this;
-  str                 label;
-  str                 appName    = "";
-  u32                 appVers    = 0;
-  str                 engineName = "";
-  u32                 engineVers = 0;
-  cvk::Instance       instance   = nullptr;
-  cvk::Allocator      allocator  = nullptr;
-  cvk::DebugMessenger dbg        = nullptr;
-  cvk::Surface        surface    = nullptr;
-  cvk::DeviceGPU      deviceGPU  = nullptr;
-  cvk::Device         device     = nullptr;
-  cvk::Swapchain      swapchain  = nullptr;
+  /* Gpu*                m = this; */
+  /* str                 label; */
+  /* str                 appName    = ""; */
+  /* u32                 appVers    = 0; */
+  /* str                 engineName = ""; */
+  /* u32                 engineVers = 0; */
+  /* cvk::Instance       instance   = nullptr; */
+  /* cvk::Allocator      allocator  = nullptr; */
+  /* cvk::DebugMessenger dbg        = nullptr; */
+  /* cvk::Surface        surface    = nullptr; */
+  /* cvk::DeviceGPU      deviceGPU  = nullptr; */
+  /* cvk::Device         device     = nullptr; */
+  /* cvk::Swapchain      swapchain  = nullptr; */
 };
 Gpu::Gpu(str label, u32 appVers, u32 engineVers, w::Window* win, cvk::Allocator allocator = nullptr) {
-  //________________________________________________
-  // Application Configuration
-  m->label      = label;
-  m->appName    = m->label + str(" | Application");
-  m->appVers    = appVers;
-  m->engineName = m->label + str(" | Engine");
-  m->engineVers = engineVers;
-  //________________________________________________
-  // Allocator.assign()
-  m->allocator  = allocator;
+  /* //________________________________________________ */
+  /* // Application Configuration */
+  /* m->label      = label; */
+  /* m->appName    = m->label + str(" | Application"); */
+  /* m->appVers    = appVers; */
+  /* m->engineName = m->label + str(" | Engine"); */
+  /* m->engineVers = engineVers; */
+  /* //________________________________________________ */
+  /* // Allocator.assign() */
+  /* m->allocator  = allocator; */
   //________________________________________________
   // Instance.create()
   vkb::InstanceBuilder instBuilder;  // clang-format off

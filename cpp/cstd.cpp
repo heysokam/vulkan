@@ -11,3 +11,4 @@ template<class... Args> void prnt(Args... args) { (std::cout << ... << args); }
 void err(i32 code, str msg) { fprintf(stderr, "Error: %i->%s\n", code, msg.data()); }
 //____________________________
 // clang-format on
+

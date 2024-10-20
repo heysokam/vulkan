@@ -1,34 +1,46 @@
 //:___________________________________________________________________
 //  cdk+  |  Copyright (C) Ivan Mar (sOkam!)  |  GNU GPLv3 or later  :
 //:___________________________________________________________________
-// stdlib dependencies and Non-standard extensions  |
-//__________________________________________________|
+//! @fileoverview stdlib dependencies and Non-standard extensions  |
+//_________________________________________________________________|
 #pragma once
 
-// Aliases
-#include <iostream>
-typedef std::string str;
-typedef const char* cstr;
+//______________________________________
+// @section Aliases
+//____________________________
 #include <cstdint>
-typedef int64_t  i64;
-typedef int32_t  i32;
-typedef int16_t  i16;
-typedef int8_t   i8;
-typedef uint64_t u64;
-typedef uint32_t u32;
-typedef uint16_t u16;
-typedef uint8_t  u8;
-typedef uint8_t  byte;
-typedef float    f32;
-typedef double   f64;
+#include <cstddef>
+using byte = uint8_t;
+using u8   = uint8_t;
+using u16  = uint16_t;
+using u32  = uint32_t;
+using u64  = uint64_t;
+using uP   = uintptr_t;
+using Sz   = std::size_t;
+using i8   = int8_t;
+using i16  = int16_t;
+using i32  = int32_t;
+using i64  = int64_t;
+using iP   = intptr_t;
+using f32  = float;
+using f64  = double;
+using TODO = uint8_t;
+#include <iostream>
+using str  = std::string;
+using cstr = char const*;
+using cstr_List = cstr*;
 
-// Arrays / lists
+//______________________________________
+// @section Arrays / Lists
+//____________________________
 #include <vector>
-template<typename T>
-using vec = std::vector<T>;
+template<typename T> using vec = std::vector<T>;
+template<typename T> using seq = vec<T>;
 
 
-// Math
+//______________________________________
+// @section Math
+//____________________________
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/vec2.hpp>  // glm::vec2
@@ -68,34 +80,98 @@ using DMat4 = glm::dmat4;
 // #include <glm/integer.hpp>            // all the GLSL integer functions: findMSB, bitfieldExtract, etc.
 // #include <glm/packing.hpp>            // all the GLSL packing functions: packUnorm4x8, unpackHalf2x16, etc.
 
-//___________________________________________________________________
-// Functions
+//______________________________________
+// @section Functions
 //____________________________
 // std dependencies
 #include <fstream>
-
+#include <utility>
 
 // clang-format off
 //____________________________
 
-/// Discards the given input.
+/// @descr Discards the given input.
 #define unused(it) (void)(it)
-/// Discards the given list of inputs.
+/// @descr Discards the given list of inputs.
 template<class... Args> inline void discard(__attribute__((unused)) Args... args) {}
-/// Prints the given msg to console.
+/// @descr Prints the given msg to console.
 inline void echo(str msg) { std::cout << msg << std::endl; }
-/// Echoes the given list of messages to console.
+/// @descr Echoes the given list of messages to console.
 template<class... Args> void prnt(Args... args);
-/// Prints the given list of messages to console, without a `\n` at the end.
+/// @descr Prints the given list of messages to console, without a `\n` at the end.
 template<class... Args> void echo(Args... args);
-/// Formats the given varargs into a string.
+/// @descr Formats the given varargs into a string.
 template<class... Args> str f(Args... args);
-/// Reports the given error code and message.
-void err(i32 code, str msg);
+namespace cdk {
+  /// @descr Reports the given error code and message.
+  template <typename T> inline void err (T code, cstr msg) {
+    fprintf(stderr, "Error: %i ->%s\n", static_cast<i32>(code), msg);
+  }
+  /// @descr Reports the given error code and message and calls `exit()` afterwards
+  template <typename T> [[noreturn]] inline void fail(T E, cstr msg) {
+    cdk::err(E, msg);
+    exit(static_cast<i32>(E));
+  }
+}
+
 
 //____________________________
 // clang-format on
 
 enum class Error { fail, warn };
 #define fn __PRETTY_FUNCTION__  // Function name
+
+
+//______________________________________
+// @section Version
+//____________________________
+namespace cdk {
+  namespace version {
+    using T = u32;
+  }; // namespace version
+  using Version = cdk::version::T;
+
+  namespace version {
+    template <typename T> constexpr uint32_t make_api (T const V, T const M, T const m, T const p) {
+      return ( ( ( (uint32_t)( V ) ) << 29U ) | ( ( (uint32_t)( M ) ) << 22U ) | ( ( (uint32_t)( m ) ) << 12U ) | ( (uint32_t)( p ) ) );
+    } // cdk.version.make_api
+
+    template <typename T> constexpr uint32_t make (T const M, T const m, T const p) {
+      return cdk::version::make_api(0, M,m,p);
+    } // cdk.version.make
+  } // namespace version
+
+  //______________________________________
+  // @section Systems aliasing
+  //____________________________
+  #if defined __WIN32
+  #  define windows
+  constexpr bool Windows = true;
+  constexpr bool Linux   = false;
+  constexpr bool Mac     = false;
+  #endif
+  #if defined __linux__
+  // #define linux
+  constexpr bool Windows = false;
+  constexpr bool Linux   = true;
+  constexpr bool Mac     = false;
+  #endif
+  #if defined __APPLE__
+  #  define macosx
+  constexpr bool Windows = false;
+  constexpr bool Linux   = false;
+  constexpr bool Mac     = true;
+  #endif
+
+  //______________________________________
+  // @section Build Mode aliasing
+  //____________________________
+  #if defined NDEBUG || !defined DEBUG
+  constexpr bool release = true;
+  constexpr bool debug   = false;
+  #elif defined DEBUG
+  constexpr bool release = false;
+  constexpr bool debug   = true;
+  #endif
+} // namespace cdk
 
