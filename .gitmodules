@@ -4,3 +4,15 @@
 [submodule "lib/vmath"]
 	path = lib/vmath
 	url = https://github.com/treeform/vmath
+[submodule "lib/nstd"]
+	path = lib/nstd
+	url = https://github.com/heysokam/nstd
+[submodule "lib/nsys"]
+	path = lib/nsys
+	url = https://github.com/heysokam/nsys
+[submodule "lib/nglfw"]
+	path = lib/nglfw
+	url = https://github.com/heysokam/nglfw
+[submodule "lib/nmath"]
+	path = lib/nmath
+	url = https://github.com/heysokam/nmath
