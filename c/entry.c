@@ -3,19 +3,94 @@
 //:__________________________________________________________________
 // @deps std
 #include <stdio.h>
+#define DEBUG
 // @deps cdk
 #include "./csys.h"
+#include "./cvk.h"
 // @deps Buildsystem SCU
 #include "./cstd.c"
 #include "./cmem.c"
 #include "./csys.c"
+#define cvk_SCU
+#include "./cvk.c"
 
+typedef struct Gpu {
+  cvk_Allocator A;
+  cvk_Instance  instance;
+} Gpu;
 
+/// @internal
+/// @descr Gets the full list of instance extensions, by merging our desired {@arg list} with the ones required by the system.
+/// @note Makes the library dependent on GLFW
+cstr_List gpu_instance_extensions_get (u32 const listCount, cstr const list[], u32* const total);
+cstr_List gpu_instance_extensions_get (u32 const listCount, cstr const list[], u32* const total) {
+  cstr_List const required = glfwGetRequiredInstanceExtensions(total);
+  if (!required) err(cvk_Error_extensions, "Couldn't find any Vulkan Extensions. Vk is not usable (probably not installed)");
+  cstr exts[listCount];
+  for(size_t id = 0; id < listCount; ++id) exts[id] = list[id];
+  cstr_List const result = cstr_List_merge(required, (Sz)(*total), exts, listCount);
+  *total = *total + listCount;
+  return result;
+}
+
+typedef struct gpu_init_args_s {
+  cstr          appName;
+  cdk_Version   appVers;
+  cstr          engineName;
+  cdk_Version   engineVers;
+  cvk_Allocator allocator;
+} gpu_init_args;
+gpu_init_args gpu_init_args_defaults (void) {
+  return (gpu_init_args){
+    .appName    = "HelloVulkan | C | Application",
+    .appVers    = cdk_version_new(0, 0, 0),
+    .engineName = "HelloVulkan | C | Engine",
+    .engineVers = cdk_version_new(0, 0, 0),
+    .allocator  = NULL,
+  };
+}
+Gpu gpu_init (gpu_init_args in) {
+  Gpu result = (Gpu){.A= in.allocator};
+  u32 extCount = 0;
+  cstr_List const exts = gpu_instance_extensions_get(cvk_cfg_instance_ExtensionsCount, cvk_cfg_instance_Extensions, &extCount);
+  cvk_debug_Cfg debugCfg = cvk_debug_setup(
+    /* flags    */  cvk_cfg_validation_DebugFlags,
+    /* severity */  cvk_cfg_validation_DebugSeverity,
+    /* msgType  */  cvk_cfg_validation_DebugMsgType,
+    /* callback */  cvk_debug_cb,
+    /* userdata */  NULL
+    ); //:: debugCfg
+  result.instance = cvk_instance_create(
+    /* appName    */  in.appName,
+    /* appVers    */  in.appVers,
+    /* engineName */  in.engineName,
+    /* engineVers */  in.engineVers,
+    /* apiVers    */  cvk_cfg_Version,
+    /* flags      */  cvk_cfg_instance_Flags,
+    /* extCount   */  extCount,
+    /* exts       */  exts,
+    /* validate   */  cvk_cfg_validation_Active,
+    /* layerCount */  cvk_cfg_validation_LayerCount,
+    /* layers     */  cvk_cfg_validation_Layers,
+    /* dbg        */  debugCfg,
+    /* A          */  result.A
+    ); //:: result.instance
+  return result;
+}
+void gpu_term (Gpu* gpu) {
+  cvk_debug_destroy(&gpu->instance.dbg, gpu->instance);
+  cvk_instance_destroy(&gpu->instance);
+}
+
+void gpu_update (Gpu* gpu) { discard(gpu); return; }
+
+//______________________________________
+// @section Entry Point
+//____________________________
+void cli_report (void);
+//__________________
 int main (int const argc, char const* argv[argc]) {
-  printf("Hello cvk Entry\n");
-  #if cdk_debug
-  printf("hello world with -DDEBUG\n");
-  #endif
+  cli_report();
   csys_System sys = csys_init((csys_init_args) {
     // clang-format off
     .win           = (w_init_args){
@@ -33,19 +108,22 @@ int main (int const argc, char const* argv[argc]) {
       .mouseScroll = NULL,
       }, // << input
   });  // clang-format on
-  // Vulkan gpu = cvk_init((cvk_init_args) {
-  //   .appName    = "c*vk | Application",
-  //   .appVers    = cdk_makeVersion(0, 0, 0),
-  //   .engineName = "c*vk | Engine",
-  //   .engineVers = cdk_makeVersion(0, 0, 0),
-  //   .allocator  = NULL,
-  // });
+  Gpu gpu = gpu_init(gpu_init_args_defaults());
   while (!csys_close(&sys)) {
     csys_update(&sys);
-    // cvk_update(&gpu);
+    gpu_update(&gpu);
   }
-  // cvk_term(&gpu);
+  gpu_term(&gpu);
   csys_term(&sys);
   return 0;
 } //:: main
+
+//__________________
+inline void cli_report (void) {
+  #if cdk_debug
+  printf("Hello cvk Entry with -DDEBUG. Validation Layers are active.\n");
+  #else
+  printf("Hello cvk Entry. Validation Layers are inactive.\n");
+  #endif
+}
 
