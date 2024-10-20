@@ -3,40 +3,65 @@
 //:__________________________________________________________________
 #pragma once
 
+#include <stdlib.h>
 #include <stdbool.h>
 #include <stdint.h>
-typedef uint8_t       u8;
-typedef uint16_t      u16;
-typedef uint32_t      u32;
-typedef uint64_t      u64;
-typedef int8_t        i8;
-typedef int16_t       i16;
-typedef int32_t       i32;
-typedef int64_t       i64;
-typedef unsigned char byte;
-typedef float         f32;
-typedef double        f64;
-typedef char*         str;
-typedef const char*   cstr;
-typedef u8            TODO;
 
-//__________________________________________________________
-// General Purpose
+typedef uint8_t     byte;
+typedef uint8_t     u8;
+typedef uint16_t    u16;
+typedef uint32_t    u32;
+typedef uint64_t    u64;
+typedef uintptr_t   uP;
+typedef size_t      Sz;
+typedef int8_t      i8;
+typedef int16_t     i16;
+typedef int32_t     i32;
+typedef int64_t     i64;
+typedef intptr_t    iP;
+typedef float       f32;
+typedef double      f64;
+typedef char*       str;
+typedef char const* cstr;
+typedef cstr*       cstr_List;
+typedef u8          TODO;
+
 //______________________________________
+// @section Growable Arrays
+//____________________________
+typedef struct Garr Garr;
+struct Garr {
+  Sz len; Sz cap;
+  void* data;
+};
+typedef struct ByteBuffer ByteBuffer;
+struct ByteBuffer {
+  Sz len; Sz cap;
+  byte* data;
+};
 
-// clang-format off
-typedef struct Handle_s { u32 id; } Handle;
-// clang-format on
 
-/// Creates a new Handle object
-Handle newHandle(void);
-/// Discards the given input.
+//______________________________________
+// @section General Purpose
+//____________________________
+
+/// @descr Discards the given input.
 #define discard(it) (void)(it)
 
-
-//__________________________________________________________
-// Arrays
 //______________________________________
+// @section Handles
+//____________________________
+
+// clang-format off
+typedef struct cdk_Handle_s { u32 id; } cdk_Handle;
+// clang-format on
+
+/// @descr Creates a new Handle object
+cdk_Handle cdk_handle_new(void);
+
+//______________________________________
+// @section Arrays
+//____________________________
 #include <stddef.h>
 
 /// Returns the size of the input array
@@ -60,12 +85,11 @@ cstr* arr_cstr_merge(cstr* one, size_t len1, cstr* two, size_t len2);
 //____________________________|
 
 
-//__________________________________________________________
-// Strings: cstr
 //______________________________________
-
+// @section Strings: cstr
+//____________________________
 #include "./cmem.h"
-/// Compares two strings and returns a boolean of whether or not they are the same
+/// @descr Compares two strings and returns a boolean of whether or not they are the same
 #define str_equal(a,b) (bool)(strcmp((a),(b)) == 0)
 cstr* arr_cstr_merge(cstr* a, size_t len_a, cstr* b, size_t len_b);
 
@@ -73,17 +97,25 @@ cstr* arr_cstr_merge(cstr* a, size_t len_a, cstr* b, size_t len_b);
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
-/// Prints the formatted varargs message to console.
+/// @descr Prints the formatted varargs message to console.
 void echof(cstr fmt, ...);
-/// Echoes an error message to stderr.
+/// @descr Echoes an error message to stderr.
 void err(i32 code, cstr msg);
-/// Echoes an error message to stderr, and exits the app.
-void fail(i32 code, cstr msg);
-/// Generates a version number, in Vulkan style
-u32 cdk_makeVersion(const u32 M, const u32 m, const u32 p);
+/// @descr Echoes an error message to stderr, and exits the app.
+[[noreturn]] void fail(i32 code, cstr msg);
+
+//______________________________________
+// @section Version
+//____________________________
+/// @descr Represents a version number (compatible with Vulkan)
+typedef u32 cdk_Version;
+/// @descr Generates a version number (compatible with Vulkan)
+cdk_Version cdk_version_new(u32 const M, u32 const m, u32 const p);
 
 
-/// Systems aliasing
+//______________________________________
+// @section Systems aliasing
+//____________________________
 #if defined __WIN32
 #  define windows
 #endif
@@ -94,7 +126,9 @@ u32 cdk_makeVersion(const u32 M, const u32 m, const u32 p);
 #  define macosx
 #endif
 
-/// Build Mode aliasing
+//______________________________________
+// @section Build Mode aliasing
+//____________________________
 #if defined NDEBUG || !defined DEBUG
 #define cdk_release true
 #define cdk_debug false

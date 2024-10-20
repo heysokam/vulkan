@@ -2,6 +2,7 @@
 //  cdk  |  Copyright (C) Ivan Mar (sOkam!)  |  GNU GPLv3 or later  :
 //:__________________________________________________________________
 #include "./csys.h"
+#include "cstd.h"
 
 //__________________________________________________________
 // Window
@@ -70,7 +71,7 @@ csys_Input i_init(csys_Window win, i_init_args in) {
   glfwSetCursorPosCallback(win.ct, in.mousePos);
   glfwSetMouseButtonCallback(win.ct, in.mouseBtn);
   glfwSetScrollCallback(win.ct, in.mouseScroll);
-  return newHandle();
+  return cdk_handle_new();
 }
 
 void i_update(csys_Input i) {
