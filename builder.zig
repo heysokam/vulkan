@@ -39,12 +39,14 @@ const dir         = struct {
   const C         = "./c";
   const Cpp       = "./cpp";
   const Zig       = "./zig";
+  const Nim       = "./nim";
   const glfw      = "./lib/glfw";
 }; //:: dir
 const run         = struct {
   const C         = false;
   const Cpp       = false;
-  const Zig       = true;
+  const Zig       = false;
+  const Nim       = true;
   const Rust      = false;
 }; //:: run
 
@@ -80,6 +82,19 @@ pub fn main () !u8 {
     .flags   = glfw.flags,
     }, &builder);
   //__________________
+  var Nim = try confy.Program(.{
+    .trg     = "vk_nim",
+    .entry   = dir.Nim++"/entry.nim",
+    .version = P.version,
+    .deps    = &.{
+      confy.Submodule.new("nstd",  "http://github.com/heysokam/nstd",  .{}),
+      confy.Submodule.new("vmath", "http://github.com/treeform/vmath", .{}),
+      confy.Submodule.new("nmath", "http://github.com/heysokam/nmath", .{}),
+      confy.Submodule.new("nglfw", "http://github.com/heysokam/nglfw", .{}),
+      confy.Submodule.new("nsys",  "http://github.com/heysokam/nsys",  .{}),
+      }, //:: Nim.deps
+    }, &builder);
+  //__________________
   const rust = struct {
     const bin = "vk_rust";
     const trg = dir.bin++"/debug/"++bin;
@@ -97,6 +112,7 @@ pub fn main () !u8 {
   if (run.C   ) { try C.build();   try C.run();   }
   if (run.Cpp ) { try Cpp.build(); try Cpp.run(); }
   if (run.Zig ) { try Zig.build(); try Zig.run(); }
+  if (run.Nim ) { try Nim.build(); try Nim.run(); }
   if (run.Rust) { try rust.build(&builder); try rust.run(&builder); }
   return 0;
 }
