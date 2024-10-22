@@ -152,7 +152,7 @@ pub const zgpu = struct {
     A         :zvk.Allocator,
     instance  :zvk.Instance,
     dbg       :zvk.Debug,
-    // device    :zvk.Device,
+    device    :zvk.Device,
     surface   :zvk.Surface,
     // swapchain :zvk.Swapchain,
 
@@ -170,7 +170,7 @@ pub const zgpu = struct {
         var result :zvk.Surface= null;
         try zvk.ok(glfw.vk.surface.create(@ptrCast(I.ct), W, @ptrCast(A.vk), @ptrCast(&result)));
         return result;
-      } //:: zgpu.System.surface.create
+      } //:: zgpu.System.Surface.create
 
       pub fn destroy (
           I : zvk.Instance,
@@ -178,7 +178,7 @@ pub const zgpu = struct {
           A : zvk.Allocator,
         ) void {
         zvk.surface.destroy(I.ct, S, A.vk);
-      } //:: zgpu.System.surface.destroy
+      } //:: zgpu.System.Surface.destroy
     }; //:: zgpu.System.surface
 
     //______________________________________
@@ -207,7 +207,7 @@ pub const zgpu = struct {
       .A         = undefined,
       .instance  = undefined,
       .dbg       = undefined,
-      // .device    = undefined,
+      .device    = undefined,
       .surface   = undefined,
       // .swapchain = undefined, };
       };
@@ -237,21 +237,21 @@ pub const zgpu = struct {
         .engineVers = in.engineVers, },
         &debugCfg, result.A);
       result.dbg       = try zvk.validation.debug.create(result.instance, &debugCfg, result.A);
-      // result.device    = try zvk.Device.create(result.instance, result.surface, result.A);
       result.surface   = try zgpu.System.Surface.create(result.instance, window, result.A);
+      result.device    = try zvk.Device.create(result.instance, result.surface, result.A);
       // result.swapchain = try zgpu.System.swapchain.create(result.device, result.surface, window, A);
       return result;
     } //:: zgpu.System.create
 
     pub fn destroy (S :*System) !void {
       // S.swapchain.destroy(S.device);
+      S.device.destroy();
       zgpu.System.Surface.destroy(S.instance, S.surface, S.A);
-      // S.device.destroy();
       try zvk.validation.debug.destroy(S.instance, S.dbg, S.A);
       S.instance.destroy();
     } //:: zgpu.System.destroy
 
-    pub fn waitIdle (S :*const System) !void { _=S; } //try S.device.waitIdle(); }
+    pub fn waitIdle (S :*const System) !void { try S.device.waitIdle(); }
   }; //:: zgpu.System
 }; //:: zgpu
 
