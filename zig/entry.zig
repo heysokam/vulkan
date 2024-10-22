@@ -13,7 +13,7 @@ const shd = struct {
   const vert align(@alignOf(u32)) = @embedFile("shd_vert").*;
   const frag align(@alignOf(u32)) = @embedFile("shd_frag").*;
 };
-const appName = "Zig | Vulkan-All-the-Things | Triangle";
+const appName = "Zig | Vulkan-All-the-Things";
 var size      = zvk.Size{.width= 960, .height= 540};
 
 //______________________________________

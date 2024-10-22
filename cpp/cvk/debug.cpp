@@ -48,7 +48,6 @@ cvk::Debug::Debug(
   m->A      = A;
   m->cfg    = cfg;
   m->active = active;
-  /* m->ct = (VkDebugUtilsMessengerEXT*)calloc(1, sizeof(VkDebugUtilsMessengerEXT)); */
   cvk::debug::getFn::create(I);
   VkResult const code = vk::debug::create(I, &m->cfg, m->A, &m->ct);
   if (code != VK_SUCCESS) cvk::fail(code, "Failed to create the Vulkan Debug Messenger");
