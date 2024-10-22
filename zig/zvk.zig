@@ -20,6 +20,7 @@ pub const zvk = struct {
   pub const Version  = vk.Version;
   pub const Debug    = vk.Debug;
   pub const Surface  = vk.Surface;
+  pub const ok       = vk.ok;
 
   //______________________________________
   // @section Allocator
@@ -209,6 +210,14 @@ pub const zvk = struct {
         }; //:: zvk.App.Cfg{ ... }
     } //:: zvk.App.defaults
   }; //:: zvk.App
+
+  //______________________________________
+  // @section Surface
+  //____________________________
+  pub const surface = struct {
+    pub const destroy = vk.surface.destroy;
+  }; //:: zvk.surface
+
 
   //______________________________________
   // @section Instance
@@ -1029,13 +1038,6 @@ pub const zvk = struct {
 //     }; //:: zvk.Device.sync
 //     pub const waitIdle = zvk.Device.sync.waitIdle;
 //   }; //:: zvk.Device
-//
-//   //______________________________________
-//   // @section Surface
-//   //____________________________
-//   pub const surface = struct {
-//     pub const destroy = vk.surface.destroy;
-//   }; //:: zvk.surface
 //
 //   //______________________________________
 //   // @section Swapchain

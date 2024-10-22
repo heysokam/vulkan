@@ -152,34 +152,34 @@ pub const zgpu = struct {
     A         :zvk.Allocator,
     instance  :zvk.Instance,
     dbg       :zvk.Debug,
-    // surface   :zvk.Surface,
     // device    :zvk.Device,
+    surface   :zvk.Surface,
     // swapchain :zvk.Swapchain,
 
     //______________________________________
     // @section System: Surface
     //____________________________
-    // pub const surface = struct {
-    //   /// @descr Creates a native Surface that Vulkan can draw into
-    //   /// @note Makes this library dependent on GLFW
-    //   pub fn create (
-    //       I : zvk.Instance,
-    //       W : ?*glfw.Window,
-    //       A : zvk.Allocator,
-    //     ) !zvk.Surface {
-    //     var result :zvk.Surface= null;
-    //     try zvk.vk.ok(glfw.vk.surface.create(@ptrCast(I.ct), W, @ptrCast(A.vk), @ptrCast(&result)));
-    //     return result;
-    //   } //:: zgpu.System.surface.create
-    //
-    //   pub fn destroy (
-    //       I : zvk.Instance,
-    //       S : zvk.Surface,
-    //       A : zvk.Allocator,
-    //     ) void {
-    //     zvk.surface.destroy(I.ct, S, A.vk);
-    //   } //:: zgpu.System.surface.destroy
-    // }; //:: zgpu.System.surface
+    pub const Surface = struct {
+      /// @descr Creates a native Surface that Vulkan can draw into
+      /// @note Makes this library dependent on GLFW
+      pub fn create (
+          I : zvk.Instance,
+          W : ?*glfw.Window,
+          A : zvk.Allocator,
+        ) !zvk.Surface {
+        var result :zvk.Surface= null;
+        try zvk.ok(glfw.vk.surface.create(@ptrCast(I.ct), W, @ptrCast(A.vk), @ptrCast(&result)));
+        return result;
+      } //:: zgpu.System.surface.create
+
+      pub fn destroy (
+          I : zvk.Instance,
+          S : zvk.Surface,
+          A : zvk.Allocator,
+        ) void {
+        zvk.surface.destroy(I.ct, S, A.vk);
+      } //:: zgpu.System.surface.destroy
+    }; //:: zgpu.System.surface
 
     //______________________________________
     // @section System: Swapchain
@@ -207,8 +207,8 @@ pub const zgpu = struct {
       .A         = undefined,
       .instance  = undefined,
       .dbg       = undefined,
-      // .surface   = undefined,
       // .device    = undefined,
+      .surface   = undefined,
       // .swapchain = undefined, };
       };
     } //:: zgpu.System.empty
@@ -220,7 +220,7 @@ pub const zgpu = struct {
         engineVers : zgpu.Version = zgpu.cfg.default.engineVers, },
         window     : ?*glfw.Window,
         A          : zgpu.Allocator,
-      ) !zgpu.System {_=window;
+      ) !zgpu.System {
       const debugCfg = zvk.validation.debug.setup(.{
         .flags     = zvk.cfg.debug.flags,
         .severity  = zvk.cfg.debug.severity,
@@ -237,15 +237,15 @@ pub const zgpu = struct {
         .engineVers = in.engineVers, },
         &debugCfg, result.A);
       result.dbg       = try zvk.validation.debug.create(result.instance, &debugCfg, result.A);
-      // result.surface   = try tut.System.surface.create(result.instance, window, result.A);
       // result.device    = try zvk.Device.create(result.instance, result.surface, result.A);
-      // result.swapchain = try tut.System.swapchain.create(result.device, result.surface, window, A);
+      result.surface   = try zgpu.System.Surface.create(result.instance, window, result.A);
+      // result.swapchain = try zgpu.System.swapchain.create(result.device, result.surface, window, A);
       return result;
     } //:: zgpu.System.create
 
     pub fn destroy (S :*System) !void {
       // S.swapchain.destroy(S.device);
-      // tut.System.surface.destroy(S.instance, S.surface, S.A);
+      zgpu.System.Surface.destroy(S.instance, S.surface, S.A);
       // S.device.destroy();
       try zvk.validation.debug.destroy(S.instance, S.dbg, S.A);
       S.instance.destroy();
