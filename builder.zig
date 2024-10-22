@@ -45,8 +45,8 @@ const dir         = struct {
 const run         = struct {
   const C         = false;
   const Cpp       = false;
-  const Zig       = false;
-  const Nim       = true;
+  const Zig       = true;
+  const Nim       = false;
   const Rust      = false;
 }; //:: run
 
