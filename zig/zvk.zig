@@ -22,6 +22,10 @@ pub const zvk = struct {
   pub const Surface  = vk.Surface;
   pub const ok       = vk.ok;
 
+  pub const Color = struct {
+    pub const Format = vk.color.Format;
+  }; //:: zvk.Color
+
   //______________________________________
   // @section Allocator
   //____________________________
@@ -215,7 +219,9 @@ pub const zvk = struct {
   // @section Surface
   //____________________________
   pub const surface = struct {
-    pub const destroy = vk.surface.destroy;
+    const Format       = vk.surface.Format;
+    const Capabilities = vk.surface.Capabilities;
+    pub const destroy  = vk.surface.destroy;
   }; //:: zvk.surface
 
 
@@ -646,17 +652,19 @@ pub const zvk = struct {
     logical   :zvk.Device.Logical,
     queue     :zvk.Device.Queue,
 
+    pub const PresentMode = vk.device.present.Mode;
+
     pub fn create (
        I : zvk.Instance,
-       S : vk.Surface,
+       S : zvk.Surface,
        A : zvk.Allocator,
       ) !zvk.Device {
       const feats = zvk.Features.defaults();
       const exts :[]const zvk.Device.extensions.Name= zvk.cfg.device.extensions;
       var result = zvk.Device{.A=A, .physical=undefined, .logical=undefined, .queue= undefined, };
       result.physical = try zvk.Device.Physical.create(I, S, exts, feats, A);
-      result.logical  = try zvk.Device.Logical.create(result.physical.ct, S, exts, feats, A);
-      result.queue    = try zvk.Device.Queue.create(result.physical.ct, result.logical.ct, S, A);
+      result.logical  = try zvk.Device.Logical.create(result.physical, S, exts, feats, A);
+      result.queue    = try zvk.Device.Queue.create(result.physical, result.logical, S, A);
       return result;
     } //:: zvk.Device.create
 
@@ -677,14 +685,14 @@ pub const zvk = struct {
 
       /// Returns the list of all available device extension names
       pub fn getProperties (
-          D : vk.Device.Physical,
+          D : zvk.Device.Physical,
           A : zvk.Allocator,
         ) !zvk.Device.extensions.Properties {
         // Get the list of extension properties
         var count :u32= 0;
-        try vk.ok(vk.device.extensions.getProperties(D, null, &count, null));
+        try vk.ok(vk.device.extensions.getProperties(D.ct, null, &count, null));
         const result = try A.zig.alloc(vk.device.extensions.Properties, count);
-        try vk.ok(vk.device.extensions.getProperties(D, null, &count, result.ptr));
+        try vk.ok(vk.device.extensions.getProperties(D.ct, null, &count, result.ptr));
         return result;
       } //:: zvk.Device.extensions.getProperties
 
@@ -702,7 +710,7 @@ pub const zvk = struct {
 
       /// Returns whether or not the {@arg D} device supports all extensions in the {@arg L} list.
       pub fn supportsAll (
-          D : vk.Device.Physical,
+          D : zvk.Device.Physical,
           L : zvk.Device.Extensions,
           A : zvk.Allocator,
         ) !bool {
@@ -719,15 +727,15 @@ pub const zvk = struct {
     //____________________________
     pub const features = struct {
       pub fn getList (
-          D : vk.Device.Physical,
+          D : zvk.Device.Physical,
         ) vk.device.physical.Features {
         var result = vk.device.physical.Features{};
-        vk.device.physical.getFeatures(D, &result);
+        vk.device.physical.getFeatures(D.ct, &result);
         return result;
       } //:: zvk.Device.features.getList
 
       pub fn supportsAll (
-          D : vk.Device.Physical,
+          D : zvk.Device.Physical,
           F : zvk.Features,
         ) bool {
         // FIX: Check that all of the desired features are supported
@@ -752,40 +760,40 @@ pub const zvk = struct {
         modes    :[]vk.device.present.Mode,
 
         pub fn getCapabilities (
-            D : vk.Device.Physical,
-            S : vk.Surface,
+            D : zvk.Device.Physical,
+            S : zvk.Surface,
           ) !vk.surface.Capabilities {
           var result = vk.surface.Capabilities{};
-          try vk.ok(vk.device.physical.surface.getCapabilities(D, S, &result));
+          try vk.ok(vk.device.physical.surface.getCapabilities(D.ct, S, &result));
           return result;
         }
 
         pub fn getFormats (
-            D : vk.Device.Physical,
-            S : vk.Surface,
+            D : zvk.Device.Physical,
+            S : zvk.Surface,
             A : zvk.Allocator,
           ) ![]vk.surface.Format {
           var result :[]vk.surface.Format= &.{};
           var count :u32= 0;
-          try vk.ok(vk.device.physical.surface.getFormats(D, S, &count, null));
+          try vk.ok(vk.device.physical.surface.getFormats(D.ct, S, &count, null));
           if (count > 0) {
             result = try A.zig.alloc(vk.surface.Format, count);
-            try vk.ok(vk.device.physical.surface.getFormats(D, S, &count, result.ptr));
+            try vk.ok(vk.device.physical.surface.getFormats(D.ct, S, &count, result.ptr));
           } else return error.device_NoSurfaceFormats;
           return result;
         }
 
         pub fn getPresentModes (
-            D : vk.Device.Physical,
-            S : vk.Surface,
+            D : zvk.Device.Physical,
+            S : zvk.Surface,
             A : zvk.Allocator,
           ) ![]vk.device.present.Mode {
           var result :[]vk.device.present.Mode= &.{};
           var count :u32= 0;
-          try vk.ok(vk.device.physical.surface.getPresentModes(D, S, &count, null));
+          try vk.ok(vk.device.physical.surface.getPresentModes(D.ct, S, &count, null));
           if (count > 0) {
             result = try A.zig.alloc(vk.device.present.Mode, count);
-            try vk.ok(vk.device.physical.surface.getPresentModes(D, S, &count, result.ptr));
+            try vk.ok(vk.device.physical.surface.getPresentModes(D.ct, S, &count, result.ptr));
           } else return error.device_NoPresentModes;
           return result;
         }
@@ -793,11 +801,12 @@ pub const zvk = struct {
         pub fn hasSwapchain (S :*const SwapchainSupport) bool {
           return S.formats.len > 0 and S.modes.len > 0;
         }
+
         /// Returns the Swapchain support information for the given Device+Surface
         /// Allocates memory for its formats and modes lists
         pub fn create (
-            D : vk.Device.Physical,
-            S : vk.Surface,
+            D : zvk.Device.Physical,
+            S : zvk.Surface,
             A : zvk.Allocator,
           ) !SwapchainSupport {
           return zvk.Device.Physical.SwapchainSupport{
@@ -818,17 +827,17 @@ pub const zvk = struct {
       }; //:: zvk.Device.Physical.SwapchainSupport
 
       pub fn getProperties (
-          D : vk.Device.Physical,
+          D : zvk.Device.Physical,
         ) vk.device.physical.Properties {
         var result = vk.device.physical.Properties{};
-        vk.device.physical.getProperties(D, &result);
+        vk.device.physical.getProperties(D.ct, &result);
         return result;
       } //:: zvk.Device.Physical.getProperties
 
       /// Returns true if the {@arg D} device supports the default configuration of this library
       pub fn isSuitable (
-          D : vk.Device.Physical,
-          S : vk.Surface,
+          D : zvk.Device.Physical,
+          S : zvk.Surface,
           E : zvk.Device.Extensions,
           F : zvk.Features,
           A : zvk.Allocator,
@@ -848,8 +857,8 @@ pub const zvk = struct {
       } //:: zvk.Device.Physical.isSuitable
 
       pub fn findSuitable (
-          L : []const vk.Device.Physical,
-          S : vk.Surface,
+          L : []const vk.device.Physical,
+          S : zvk.Surface,
           E : zvk.Device.Extensions,
           F : zvk.Features,
           A : zvk.Allocator,
@@ -875,7 +884,7 @@ pub const zvk = struct {
 
       pub fn create (
           I : zvk.Instance,
-          S : vk.Surface,
+          S : zvk.Surface,
           E : zvk.Device.Extensions,
           F : zvk.Features,
           A : zvk.Allocator,
@@ -926,8 +935,8 @@ pub const zvk = struct {
       } //:: zvk.Device.Logical.setup
 
       pub fn create (
-         D : vk.Device.Physical,
-         S : vk.Surface,
+         D : zvk.Device.Physical,
+         S : zvk.Surface,
          E : zvk.Device.Extensions,
          F : zvk.Features,
          A : zvk.Allocator,
@@ -950,7 +959,7 @@ pub const zvk = struct {
           .ct  = null,
           .cfg = try zvk.Device.Logical.setup(queueCfgs, E, feats.root)
           }; //:: result
-        try vk.ok(vk.device.logical.create(D, &result.cfg, result.A.vk, &result.ct));
+        try vk.ok(vk.device.logical.create(D.ct, &result.cfg, result.A.vk, &result.ct));
         return result;
       } //:: zvk.Device.Logical.create
 
@@ -986,9 +995,9 @@ pub const zvk = struct {
       } //:: zvk.Device.Queue.setup
 
       pub fn create (
-         P : vk.Device.Physical,
-         L : vk.Device.Logical,
-         S : vk.Surface,
+         P : zvk.Device.Physical,
+         L : zvk.Device.Logical,
+         S : zvk.Surface,
          A : zvk.Allocator,
         ) !zvk.Device.Queue {
         var fam = try zvk.Device.Queue.Family.create(P, S, A);
@@ -1010,12 +1019,12 @@ pub const zvk = struct {
         ct  :vk.device.Queue,
 
         pub fn create (
-           L  : vk.Device.Logical,
+           D  : zvk.Device.Logical,
            id : ?u32,
           ) ?zvk.Device.Queue.Entry {
           if (id == null) return null;
           var result = zvk.Device.Queue.Entry{.id= id.?, .ct= null};
-          vk.device.queue.get(L, result.id, 0, &result.ct);
+          vk.device.queue.get(D.ct, result.id, 0, &result.ct);
           return result;
         } //:: zvk.Device.Queue.Entry.create
       }; //:: zvk.Device.Queue.Entry
@@ -1030,19 +1039,31 @@ pub const zvk = struct {
         graphics  :?u32= null,
         present   :?u32= null,
 
-        /// Frees the Family Properties list, and sets every other value to empty
-        pub fn destroy (
-            F : *zvk.Device.Queue.Family,
-          ) void {
-          F.A.zig.free(F.props);
-          F.graphics = null;
-          F.present  = null;
-        } //:: zvk.Device.Queue.Family.destroy
+        pub fn canPresent (
+            D  : zvk.Device.Physical,
+            S  : zvk.Surface,
+            id : u32,
+          ) !bool {
+          var result :vk.Bool= vk.False;
+          try vk.ok(vk.device.physical.surface.getSupport(D.ct, id, S, &result));
+          return result == vk.True;
+        } //:: zvk.Device.Queue.Family.canPresent
+
+        pub fn getProperties (
+            D : zvk.Device.Physical,
+            A : zvk.Allocator,
+          ) ![]vk.device.queue.family.Properties {
+          var count :u32= 0;
+          vk.device.queue.family.getProperties(D.ct, &count, null);
+          const result = try A.zig.alloc(vk.device.queue.family.Properties, count);
+          vk.device.queue.family.getProperties(D.ct, &count, result.ptr);
+          return result;
+        } //:: zvk.Device.Queue.Family.getProperties
 
         /// Returns the Queue Families of the given device.
         pub fn create (
-            D : vk.Device.Physical,
-            S : vk.Surface,
+            D : zvk.Device.Physical,
+            S : zvk.Surface,
             A : zvk.Allocator,
           ) !zvk.Device.Queue.Family {
           var result = zvk.Device.Queue.Family{
@@ -1057,26 +1078,14 @@ pub const zvk = struct {
           return result;
         } //:: zvk.Device.Queue.Family.create
 
-        pub fn canPresent (
-            D  : vk.Device.Physical,
-            S  : vk.Surface,
-            id : u32,
-          ) !bool {
-          var result :vk.Bool= vk.False;
-          try vk.ok(vk.device.physical.surface.getSupport(D, id, S, &result));
-          return result == vk.True;
-        } //:: zvk.Device.Queue.Family.canPresent
-
-        pub fn getProperties (
-            D : vk.Device.Physical,
-            A : zvk.Allocator,
-          ) ![]vk.device.queue.family.Properties {
-          var count :u32= 0;
-          vk.device.queue.family.getProperties(D, &count, null);
-          const result = try A.zig.alloc(vk.device.queue.family.Properties, count);
-          vk.device.queue.family.getProperties(D, &count, result.ptr);
-          return result;
-        } //:: zvk.Device.Queue.Family.getProperties
+        /// Frees the Family Properties list, and sets every other value to empty
+        pub fn destroy (
+            F : *zvk.Device.Queue.Family,
+          ) void {
+          F.A.zig.free(F.props);
+          F.graphics = null;
+          F.present  = null;
+        } //:: zvk.Device.Queue.Family.destroy
       }; //:: zvk.Device.Queue.Family
     }; //:: zvk.Device.Queue
 
@@ -1085,268 +1094,400 @@ pub const zvk = struct {
     }; //:: zvk.Device.sync
     pub const waitIdle = zvk.Device.sync.waitIdle;
   }; //:: zvk.Device
+
+
+  //______________________________________
+  // @section Swapchain
+  //____________________________
+  pub const Swapchain = struct {
+    A       : zvk.Allocator,
+    ct      : vk.Swapchain,
+    cfg     : vk.swapchain.Cfg,
+    format  : vk.surface.Format,
+    mode    : vk.device.present.Mode,
+    size    : vk.Size,
+    imgMin  : u32,
+    imgs    : zvk.Swapchain.Image.List,
+    sync    : zvk.Swapchain.Sync.List,
+
+
+    //______________________________________
+    // @section Swapchain: Image
+    //____________________________
+    pub const Image = struct {
+      A     : zvk.Allocator,
+      ct    : vk.Image,
+      view  : zvk.Swapchain.Image.View,
+
+      pub const List = []zvk.Swapchain.Image;
+
+      //______________________________________
+      // @section Swapchain Image: View
+      //____________________________
+      pub const View = struct {
+        A    : zvk.Allocator,
+        ct   : vk.image.View,
+        cfg  : vk.image.view.Cfg,
+
+        pub fn create (
+            I : vk.Image,
+            D : zvk.Device.Logical,
+            C : zvk.Color.Format,
+            A : zvk.Allocator,
+          ) !zvk.Swapchain.Image.View {
+          var result = zvk.Swapchain.Image.View{
+            .A                  = A,
+            .ct                 = undefined,
+            .cfg                = vk.image.view.Cfg{
+              .sType            = vk.stype.image.view.Cfg,
+              .pNext            = null,
+              .flags            = 0,
+              .image            = I,
+              .viewType         = vk.image.view.types.dim2D,
+              .format           = C,
+              .components       = vk.color.component.Mapping{
+                .r              = vk.color.component.Identity,
+                .g              = vk.color.component.Identity,
+                .b              = vk.color.component.Identity,
+                .a              = vk.color.component.Identity
+                }, //:: result.cfg.components
+              .subresourceRange = vk.image.Subresource{
+                .aspectMask     = vk.flags.image.Aspect.toInt(.{
+                  .color        = true,
+                  }), //:: result.cfg.subresourceRange.aspectMask
+                .baseMipLevel   = 0,
+                .levelCount     = 1,
+                .baseArrayLayer = 0,
+                .layerCount     = 1,
+                }, //:: result.cfg.subresourceRange
+              }, //:: result.cfg
+            }; //:: result
+          try vk.ok(vk.image.view.create(D.ct, &result.cfg, A.vk, &result.ct));
+          return result;
+        } //:: zvk.Swapchain.Image.View.create
+
+        pub fn destroy (
+            V : *zvk.Swapchain.Image.View,
+            D : zvk.Device.Logical,
+          ) void {
+          vk.image.view.destroy(D.ct, V.ct, V.A.vk);
+        } //:: zvk.Swapchain.Image.View.destroy
+      }; //:: zvk.Swapchain.Image.View
+
+      pub fn create (
+          I : vk.Image,
+          D : zvk.Device.Logical,
+          C : zvk.Color.Format,
+          A : zvk.Allocator,
+        ) !zvk.Swapchain.Image {
+        return zvk.Swapchain.Image{
+          .A    = A,
+          .ct   = I,
+          .view = try zvk.Swapchain.Image.View.create(I, D, C, A),
+          };
+      } //:: zvk.Swapchain.Image.create
+
+      pub fn destroy (
+          I : *zvk.Swapchain.Image,
+          D : zvk.Device.Logical,
+        ) void {
+        I.view.destroy(D);
+      } //:: zvk.Swapchain.Image.destroy
+    }; //:: zvk.Swapchain.Image
+
+    pub const select = struct {
+      /// @descr Returns the preferred color format for the Swapchain Surface
+      /// @note
+      ///  Searches for {@link zvk.cfg.swapchain.color.*} support first.
+      ///  Returns the first supported color format found otherwise.
+      pub fn format (
+          S : *const zvk.Device.Physical.SwapchainSupport,
+        ) zvk.surface.Format {
+        for (S.formats) |sc| {
+          if (sc.format     == zvk.cfg.swapchain.color.format
+          and sc.colorSpace == zvk.cfg.swapchain.color.space)
+          { return sc; }
+        }
+        return S.formats[0];  // Otherwise return the first format
+      } //:: zvk.Swapchain.select.format
+
+      /// @descr Returns the preferred present mode for the Swapchain Surface
+      /// @note
+      ///  Searches for {@link zvk.cfg.device.present} support first.
+      ///  Returns FIFO if not found. _(guaranteed to exist by spec)_
+      pub fn mode (
+          S : *const zvk.Device.Physical.SwapchainSupport,
+        ) zvk.Device.PresentMode {
+        for (S.modes) |m| if (m == zvk.cfg.device.present) return m;
+        return vk.device.present.Fifo; // Default to FiFo when Mailbox is not supported
+      } //:: zvk.Swapchain.select.mode
+
+      /// @descr Returns the size of the Swapchain Surface
+      pub fn size (
+          S  : *const zvk.Device.Physical.SwapchainSupport,
+          sz : zvk.Size,
+        ) zvk.Size {
+        // Exit early when the extents haven't changed
+        if (S.caps.currentExtent.width < std.math.maxInt(u32)) return S.caps.currentExtent;
+        // TODO: Compare measurements in pixels/units first, in case they don't match
+        return vk.Size{
+          .width = std.math.clamp(sz.width,
+            S.caps.minImageExtent.width,
+            S.caps.maxImageExtent.width, ),
+          .height = std.math.clamp(sz.height,
+            S.caps.minImageExtent.height,
+            S.caps.maxImageExtent.height, ),
+          };
+      } //:: zvk.Swapchain.select.size
+
+      /// @descr Returns the minimum number of images that the Swapchain will contain
+      pub fn imgMin (
+          S : *const zvk.Device.Physical.SwapchainSupport,
+        ) u32 {
+        return std.math.clamp(
+          S.caps.minImageCount + 1,
+          S.caps.minImageCount,
+          S.caps.maxImageCount);
+      } //:: zvk.Swapchain.select.imgMin
+    }; //:: zvk.Swapchain.select
+
+    pub const images = struct {
+      pub fn getList (
+          D  : zvk.Device.Logical,
+          S  : vk.Swapchain,
+          A  : zvk.Allocator,
+        ) ![]vk.Image {
+        // Get the list of all Images from the Swapchain
+        var count :u32= 0;
+        try vk.ok(vk.swapchain.images.getList(D.ct, S, &count, null));
+        const result = try A.zig.alloc(vk.Image, count);
+        try vk.ok(vk.swapchain.images.getList(D.ct, S, &count, result.ptr));
+        return result;
+      } //:: zvk.Swapchain.images.getList
+
+      pub fn create (
+          D : zvk.Device.Logical,
+          S : vk.Swapchain,
+          C : zvk.Color.Format,
+          A : zvk.Allocator,
+        ) !zvk.Swapchain.Image.List {
+        // Create the resulting images
+        const list = try zvk.Swapchain.images.getList(D, S, A);
+        defer A.zig.free(list);
+        var result = try A.zig.alloc(zvk.Swapchain.Image, list.len);
+        for (0..list.len) |id| result[id] = try zvk.Swapchain.Image.create(list[id], D, C, A);
+        return result;
+      } //:: zvk.Swapchain.images.create
+      
+      pub fn destroy(
+          I : zvk.Swapchain.Image.List,
+          D : zvk.Device.Logical,
+          A : zvk.Allocator,
+        ) void {
+        for (0..I.len) |id| I[id].destroy(D);
+        A.zig.free(I);
+      }
+
+      pub fn next (
+          S  : *zvk.Swapchain,
+          D  : zvk.Device.Logical,
+          Se : zvk.sync.Semaphore,
+          Fe : zvk.sync.Fence,
+        ) !zvk.Swapchain.Image {
+        var id :u32= 0;
+        try vk.ok(vk.swapchain.images.getNext(D.ct, S.ct, 1_000_000_000, Se.ct, Fe.ct, &id));
+        return S.imgs[id];
+      } //:: zvk.Swapchain.images.next
+    }; //:: zvk.Swapchain.images
+
+    //______________________________________
+    // @section Swapchain: Sync
+    //____________________________
+    pub const Sync = struct {
+      semaphore : zvk.sync.Semaphore,
+      fence     : zvk.sync.Fence,
+
+      pub const List = []zvk.Swapchain.Sync;
+
+      pub fn create (
+          D : zvk.Device.Logical,
+          A : zvk.Allocator,
+        ) !zvk.Swapchain.Sync {
+        return zvk.Swapchain.Sync{
+          .fence     = try zvk.sync.Fence.create(D, .{}, A),
+          .semaphore = try zvk.sync.Semaphore.create(D, A),};
+      } //:: zvk.Swapchain.Image.Sync.create
+
+      pub fn destroy (
+          S : *zvk.Swapchain.Sync,
+          D : zvk.Device.Logical,
+        ) void {
+        S.fence.destroy(D);
+        S.semaphore.destroy(D);
+      } //:: zvk.Swapchain.Sync.destroy
+    }; //:: zvk.Swapchain.Sync
+
+    pub const syncs = struct {
+      pub fn create (
+          D : zvk.Device.Logical,
+          C : usize,
+          A : zvk.Allocator,
+        ) !zvk.Swapchain.Sync.List {
+        var result = try A.zig.alloc(zvk.Swapchain.Sync, C);
+        for (0..C) |id| result[id] = try zvk.Swapchain.Sync.create(D, A);
+        return result;
+      } //:: zvk.Swapchain.sync.create
+
+      pub fn destroy (
+          S : zvk.Swapchain.Sync.List,
+          D : zvk.Device.Logical,
+          A : zvk.Allocator,
+        ) void {
+        for (0..S.len) |id| S[id].destroy(D);
+        A.zig.free(S);
+      } //:: zvk.Swapchain.sync.destroy
+    }; //:: zvk.Swapchain.sync
+
+
+    pub fn setup (
+        D      : zvk.Device,
+        S      : zvk.Surface,
+        imgMin : u32,
+        format : zvk.surface.Format,
+        caps   : zvk.surface.Capabilities,
+        mode   : zvk.Device.PresentMode,
+        size   : zvk.Size,
+        A      : zvk.Allocator,
+      ) !vk.swapchain.Cfg {
+      var fam = try zvk.Device.Queue.Family.create(D.physical, S, A);
+      defer fam.destroy();
+      if (fam.graphics == null or fam.present == null) return error.swapchain_IncorrectGraphicsQueueFamily;
+      const exclusive = fam.graphics == fam.present;
+      const shareMode :vk.share.Mode= if (exclusive) vk.share.exclusive else vk.share.concurrent;
+      const famCount :u32= if (exclusive) 0 else 2;
+      var famIDs = try A.zig.alloc(u32, famCount);
+      defer A.zig.free(famIDs);
+      if (famIDs.len > 0) { famIDs[0] = fam.graphics.?; famIDs[1] = fam.present.?; }
+      // Create the Cfg object and return it
+      return vk.swapchain.Cfg{
+        .sType                 = vk.stype.swapchain.Cfg,               // VkStructureType = @import("std").mem.zeroes(VkStructureType),
+        .pNext                 = null,                                 // ?*const anyopaque = @import("std").mem.zeroes(?*const anyopaque),
+        .flags                 = zvk.cfg.swapchain.flags.toInt(),      // VkSwapchainCreateFlagsKHR = @import("std").mem.zeroes(VkSwapchainCreateFlagsKHR),
+        .surface               = S,                                    // VkSurfaceKHR = @import("std").mem.zeroes(VkSurfaceKHR),
+        .minImageCount         = imgMin,                               // u32 = @import("std").mem.zeroes(u32),
+        .imageFormat           = format.format,                        // VkFormat = @import("std").mem.zeroes(VkFormat),
+        .imageColorSpace       = format.colorSpace,                    // VkColorSpaceKHR = @import("std").mem.zeroes(VkColorSpaceKHR),
+        .imageExtent           = size,                                 // VkExtent2D = @import("std").mem.zeroes(VkExtent2D),
+        .imageArrayLayers      = 1, // Always 1, unless Stereoscopic   // u32 = @import("std").mem.zeroes(u32),
+        .imageUsage            = vk.flags.image.Usage.toInt(.{         // VkImageUsageFlags = @import("std").mem.zeroes(VkImageUsageFlags),
+          .colorAttachment     = true,
+          // TODO: transferDst
+          }), //:: .imageUsage
+        .imageSharingMode      = shareMode,                            // VkSharingMode = @import("std").mem.zeroes(VkSharingMode),
+        .queueFamilyIndexCount = @intCast(famIDs.len),                 // u32 = @import("std").mem.zeroes(u32),
+        .pQueueFamilyIndices   = famIDs.ptr,                           // [*c]const u32 = @import("std").mem.zeroes([*c]const u32),
+        .preTransform          = caps.currentTransform,                // VkSurfaceTransformFlagBitsKHR = @import("std").mem.zeroes(VkSurfaceTransformFlagBitsKHR),
+        .compositeAlpha        = zvk.cfg.swapchain.alpha.toInt(),      // VkCompositeAlphaFlagBitsKHR = @import("std").mem.zeroes(VkCompositeAlphaFlagBitsKHR),
+        .presentMode           = mode,                                 // VkPresentModeKHR = @import("std").mem.zeroes(VkPresentModeKHR),
+        .clipped               = vk.toBool(zvk.cfg.swapchain.clipped), // VkBool32 = @import("std").mem.zeroes(VkBool32),
+        .oldSwapchain          = null,                                 // VkSwapchainKHR = @import("std").mem.zeroes(VkSwapchainKHR),
+        };
+    } //:: zvk.Swapchain.setup
+
+    pub fn create (
+        D  : zvk.Device,
+        S  : zvk.Surface,
+        sz : zvk.Size,
+        A  : zvk.Allocator,
+      ) !zvk.Swapchain {
+      var supp = try zvk.Device.Physical.SwapchainSupport.create(D.physical, S, A);
+      defer supp.destroy();
+      // Create the Configuration
+      var result = zvk.Swapchain{
+        .A      = A,
+        .format = zvk.Swapchain.select.format(&supp),
+        .mode   = zvk.Swapchain.select.mode(&supp),
+        .size   = zvk.Swapchain.select.size(&supp, sz),
+        .imgMin = zvk.Swapchain.select.imgMin(&supp),
+        .ct     = null,
+        .cfg    = undefined,
+        .imgs   = undefined,
+        .sync   = undefined,
+        };
+      result.cfg = try zvk.Swapchain.setup(D, S,
+        result.imgMin, result.format, supp.caps, result.mode, result.size,
+        result.A); //:: result.cfg
+      // Create the handle
+      try vk.ok(vk.swapchain.create(D.logical.ct, &result.cfg, result.A.vk, &result.ct));
+      // Get the list of Images and Sync objects
+      result.imgs = try zvk.Swapchain.images.create(D.logical, result.ct, result.format.format, result.A);
+      result.sync = try zvk.Swapchain.syncs.create(D.logical, result.imgs.len, result.A);
+      return result;
+    } //:: zvk.Swapchain.create
+
+    pub fn destroy (
+        S : *zvk.Swapchain,
+        D : zvk.Device,
+      ) void {
+      zvk.Swapchain.syncs.destroy(S.sync, D.logical, S.A);
+      zvk.Swapchain.images.destroy(S.imgs, D.logical, S.A);
+      vk.swapchain.destroy(D.logical.ct, S.ct, S.A.vk);
+    } //:: zvk.Swapchain.destroy
+  }; //:: zvk.Swapchain
+
+  pub const sync = struct {
+    pub const Fence = struct {
+      A    :zvk.Allocator,
+      ct   :vk.sync.Fence,
+      cfg  :vk.sync.fence.Cfg= .{.sType= vk.stype.sync.fence.Cfg, .pNext= null},
+
+      pub fn create (
+        D  : zvk.Device.Logical,
+        in : struct {
+          signaled :bool= true, },
+        A  : zvk.Allocator,
+        ) !zvk.sync.Fence {
+        var result = zvk.sync.Fence{.A=A, .ct=undefined};
+        result.cfg.flags = vk.flags.sync.Fence.toInt(.{
+          .signaled = in.signaled
+          }); //:: result.cfg.flags
+        try vk.ok(vk.sync.fence.create(D.ct, &result.cfg, result.A.vk, &result.ct));
+        return result;
+      } //:: zvk.sync.Fence.create
+
+      pub fn destroy (
+          F : *zvk.sync.Fence,
+          D : zvk.Device.Logical,
+        ) void {
+        vk.sync.fence.destroy(D.ct, F.ct, F.A.vk);
+      } //:: zvk.sync.Fence.destroy
+    }; //:: zvk.sync.Fence
+
+    pub const Semaphore = struct {
+      A    :zvk.Allocator,
+      ct   :vk.sync.Semaphore,
+      cfg  :vk.sync.semaphore.Cfg= .{.sType= vk.stype.sync.semaphore.Cfg, .pNext= null, .flags= 0},
+
+      pub fn create (
+        D  : zvk.Device.Logical,
+        A  : zvk.Allocator,
+        ) !zvk.sync.Semaphore {
+        var result = zvk.sync.Semaphore{.A=A, .ct=undefined};
+        try vk.ok(vk.sync.semaphore.create(D.ct, &result.cfg, result.A.vk, &result.ct));
+        return result;
+      } //:: zvk.sync.Semaphore.create
+
+      pub fn destroy (
+          F : *zvk.sync.Semaphore,
+          D : zvk.Device.Logical,
+        ) void {
+        vk.sync.semaphore.destroy(D.ct, F.ct, F.A.vk);
+      } //:: zvk.sync.Semaphore.destroy
+    }; //:: zvk.sync.Semaphore
+  }; //:: zvk.sync
 }; //:: zvk
 
 // pub const zvk2 = struct {
-//   //______________________________________
-//   // @section Swapchain
-//   //____________________________
-//   pub const Swapchain = struct {
-//     A           : zvk.Allocator,
-//     ct          : vk.Swapchain,
-//     cfg         : zvk.Swapchain.Cfg,
-//     format      : vk.surface.Format,
-//     mode        : vk.device.present.Mode,
-//     size        : vk.Size,
-//     imgMin      : u32,
-//     imgs        : zvk.Swapchain.Images,
-//     views       : zvk.Swapchain.ImageViews,
-//     sync        : zvk.Swapchain.Sync,
-//
-//     //____________________________________
-//     // Subtype aliases
-//     pub const Image      = vk.Image;
-//     pub const Images     = []zvk.Swapchain.Image;
-//     pub const ImageView  = vk.ImageView;
-//     pub const ImageViews = []zvk.Swapchain.ImageView;
-//     pub const Cfg        = vk.swapchain.Cfg;
-//     pub const SyncData   = struct { semaphore : zvk.sync.Semaphore };
-//     pub const Sync       = []zvk.Swapchain.SyncData;
-//     //____________________________________
-//
-//     pub const select = struct {
-//       /// @descr Returns the preferred color format for the Swapchain Surface
-//       /// @note
-//       ///  Searches for {@link zvk.cfg.swapchain.color.*} support first.
-//       ///  Returns the first supported color format found otherwise.
-//       pub fn format (
-//           S : *const zvk.Device.Physical.SwapchainSupport,
-//         ) vk.surface.Format {
-//         for (S.formats) |sc| {
-//           if (sc.format     == zvk.cfg.swapchain.color.format
-//           and sc.colorSpace == zvk.cfg.swapchain.color.space)
-//           { return sc; }
-//         }
-//         return S.formats[0];  // Otherwise return the first format
-//       } //:: zvk.Swapchain.select.format
-//
-//       /// @descr Returns the preferred present mode for the Swapchain Surface
-//       /// @note
-//       ///  Searches for {@link zvk.cfg.device.present} support first.
-//       ///  Returns FIFO if not found. _(guaranteed to exist by spec)_
-//       pub fn mode (
-//           S : *const zvk.Device.Physical.SwapchainSupport,
-//         ) vk.device.present.Mode {
-//         for (S.modes) |m| if (m == zvk.cfg.device.present) return m;
-//         return vk.device.present.Fifo; // Default to FiFo when Mailbox is not supported
-//       } //:: zvk.Swapchain.select.mode
-//
-//       /// @descr Returns the size of the Swapchain Surface
-//       pub fn size (
-//           S  : *const zvk.Device.Physical.SwapchainSupport,
-//           sz : zvk.Size,
-//         ) vk.Size {
-//         // Exit early when the extents haven't changed
-//         if (S.caps.currentExtent.width < std.math.maxInt(u32)) return S.caps.currentExtent;
-//         // TODO: Compare measurements in pixels/units first, in case they don't match
-//         return vk.Size{
-//           .width = std.math.clamp(sz.width,
-//             S.caps.minImageExtent.width,
-//             S.caps.maxImageExtent.width, ),
-//           .height = std.math.clamp(sz.height,
-//             S.caps.minImageExtent.height,
-//             S.caps.maxImageExtent.height, ),
-//         };
-//       } //:: zvk.Swapchain.select.size
-//
-//       /// @descr Returns the minimum number of images that the Swapchain will contain
-//       pub fn imgMin (
-//           S : *const zvk.Device.Physical.SwapchainSupport,
-//         ) u32 {
-//         return std.math.clamp(
-//           S.caps.minImageCount + 1,
-//           S.caps.minImageCount,
-//           S.caps.maxImageCount);
-//       } //:: zvk.Swapchain.select.imgMin
-//     }; //:: zvk.Swapchain.select
-//
-//     pub fn setup (
-//         D      : zvk.Device,
-//         S      : vk.Surface,
-//         imgMin : u32,
-//         format : vk.surface.Format,
-//         caps   : vk.surface.Capabilities,
-//         mode   : vk.device.present.Mode,
-//         A      : zvk.Allocator,
-//       ) !vk.swapchain.Cfg {
-//       var fam = try zvk.Device.Queue.Family.create(D.physical, S, A);
-//       defer fam.destroy();
-//       if (fam.graphics == null or fam.present == null) return error.swapchain_IncorrectGraphicsQueueFamily;
-//       const exclusive = fam.graphics == fam.present;
-//       const shareMode :vk.share.Mode= if (exclusive) vk.share.exclusive else vk.share.concurrent;
-//       const famCount :u32= if (exclusive) 0 else 2;
-//       var famIDs = try A.zig.alloc(u32, famCount);
-//       defer A.zig.free(famIDs);
-//       if (famIDs.len > 0) { famIDs[0] = fam.graphics.?; famIDs[1] = fam.present.?; }
-//       // Create the Cfg object and return it
-//       return vk.swapchain.Cfg{
-//         .sType                 = vk.stype.swapchain.Cfg,               // VkStructureType = @import("std").mem.zeroes(VkStructureType),
-//         .pNext                 = null,                                 // ?*const anyopaque = @import("std").mem.zeroes(?*const anyopaque),
-//         .flags                 = zvk.cfg.swapchain.flags.toInt(),      // VkSwapchainCreateFlagsKHR = @import("std").mem.zeroes(VkSwapchainCreateFlagsKHR),
-//         .surface               = S,                                    // VkSurfaceKHR = @import("std").mem.zeroes(VkSurfaceKHR),
-//         .minImageCount         = imgMin,                               // u32 = @import("std").mem.zeroes(u32),
-//         .imageFormat           = format.format,                        // VkFormat = @import("std").mem.zeroes(VkFormat),
-//         .imageColorSpace       = format.colorSpace,                    // VkColorSpaceKHR = @import("std").mem.zeroes(VkColorSpaceKHR),
-//         .imageExtent           = size,                                 // VkExtent2D = @import("std").mem.zeroes(VkExtent2D),
-//         .imageArrayLayers      = 1, // Always 1, unless Stereoscopic   // u32 = @import("std").mem.zeroes(u32),
-//         .imageUsage            = vk.flags.image.Usage.toInt(.{         // VkImageUsageFlags = @import("std").mem.zeroes(VkImageUsageFlags),
-//           .colorAttachment     = true,
-//           // TODO: transferDst
-//           }), //:: .imageUsage
-//         .imageSharingMode      = shareMode,                            // VkSharingMode = @import("std").mem.zeroes(VkSharingMode),
-//         .queueFamilyIndexCount = @intCast(famIDs.len),                 // u32 = @import("std").mem.zeroes(u32),
-//         .pQueueFamilyIndices   = famIDs.ptr,                           // [*c]const u32 = @import("std").mem.zeroes([*c]const u32),
-//         .preTransform          = caps.currentTransform,                // VkSurfaceTransformFlagBitsKHR = @import("std").mem.zeroes(VkSurfaceTransformFlagBitsKHR),
-//         .compositeAlpha        = zvk.cfg.swapchain.alpha.toInt(),      // VkCompositeAlphaFlagBitsKHR = @import("std").mem.zeroes(VkCompositeAlphaFlagBitsKHR),
-//         .presentMode           = mode,                                 // VkPresentModeKHR = @import("std").mem.zeroes(VkPresentModeKHR),
-//         .clipped               = vk.toBool(zvk.cfg.swapchain.clipped), // VkBool32 = @import("std").mem.zeroes(VkBool32),
-//         .oldSwapchain          = null,                                 // VkSwapchainKHR = @import("std").mem.zeroes(VkSwapchainKHR),
-//         };
-//     } //:: zvk.Swapchain.setup
-//
-//     pub const images = struct {
-//       pub fn getList (
-//           D  : zvk.Device,
-//           S  : vk.Swapchain,
-//           A  : zvk.Allocator,
-//         ) !zvk.Swapchain.Images {
-//         var count :u32= 0;
-//         try vk.ok(vk.swapchain.images.getList(D.logical, S, &count, null));
-//         const result = try A.zig.alloc(zvk.Swapchain.Image, count);
-//         try vk.ok(vk.swapchain.images.getList(D.logical, S, &count, result.ptr));
-//         return result;
-//       } //:: zvk.Swapchain.images.getList
-//
-//       pub fn getViews (
-//           D : zvk.Device,
-//           L : zvk.Swapchain.Images,
-//           C : vk.color.Format,
-//           A : zvk.Allocator,
-//         ) !zvk.Swapchain.ImageViews {
-//         var result = try A.zig.alloc(zvk.Swapchain.ImageView, L.len);
-//         for (L, 0..) |img, id| {
-//           try vk.ok(vk.image.view.create(D.logical, &vk.image.view.Cfg{
-//             .sType            = vk.stype.image.view.Cfg,
-//             .pNext            = null,
-//             .flags            = 0,
-//             .image            = img,
-//             .viewType         = vk.image.view.types.dim2D,
-//             .format           = C,
-//             .components       = vk.color.component.Mapping{
-//               .r              = vk.color.component.Identity,
-//               .g              = vk.color.component.Identity,
-//               .b              = vk.color.component.Identity,
-//               .a              = vk.color.component.Identity
-//               }, //:: .components
-//             .subresourceRange = vk.image.Subresource{
-//               .aspectMask     = vk.flags.image.Aspect.toInt(.{
-//                 .color        = true,
-//                 }), //:: .aspectMask
-//               .baseMipLevel   = 0,
-//               .levelCount     = 1,
-//               .baseArrayLayer = 0,
-//               .layerCount     = 1,
-//               }, //:: .subresourceRange
-//             }, A.vk, &result[id]));
-//         }
-//         return result;
-//       } //:: zvk.Swapchain.images.getViews
-//
-//       pub fn nextID (
-//           S  : *zvk.Swapchain,
-//           D  : zvk.Device,
-//           Sd : zvk.Swapchain.SyncData,
-//         ) !u32 {
-//         var result :u32= 0;
-//         const fence :vk.sync.Fence= null;
-//         try vk.ok(vk.swapchain.images.getNext(D.logical, S.ct, 1_000_000_000, Sd.semaphore.ct, fence, &result));
-//         return result;
-//       } //:: zvk.Swapchain.images.nextID
-//
-//       pub fn next (
-//           S  : *const zvk.Swapchain,
-//           D  : zvk.Device,
-//           Sd : zvk.Swapchain.SyncData,
-//         ) !zvk.Swapchain.Image {
-//         return S.imgs[try zvk.Swapchain.images.nextID(S, D, Sd)];
-//       } //:: zvk.Swapchain.images.next
-//     }; //:: zvk.Swapchain.images
-//     pub const nextImage = zvk.Swapchain.images.next;
-//
-//     pub const sync = struct {
-//       pub fn getList (
-//           D : zvk.Device,
-//           N : usize,
-//           A : zvk.Allocator,
-//         ) !zvk.Swapchain.Sync {
-//         var result = try A.zig.alloc(zvk.Swapchain.SyncData, N);
-//         for (0..N) |id| result[id].semaphore = try zvk.sync.Semaphore.create(D, A);
-//         return result;
-//       } //:: zvk.Swapchain.sync.getList
-//
-//       pub fn destroy (
-//           S : *zvk.Swapchain.Sync,
-//           D : zvk.Device,
-//           A : zvk.Allocator,
-//         ) void {
-//         for (0..S.len) |id| S.*[id].semaphore.destroy(D);
-//         A.zig.free(S.*);
-//       } //:: zvk.Swapchain.sync.destroy
-//     }; //:: zvk.Swapchain.sync
-//
-//     pub fn create (
-//         D  : zvk.Device,
-//         S  : vk.Surface,
-//         sz : zvk.Size,
-//         A  : zvk.Allocator,
-//       ) !zvk.Swapchain {
-//       var supp = try zvk.Device.Physical.SwapchainSupport.create(D.physical, S, A);
-//       defer supp.destroy();
-//       // Create the Configuration
-//       var result = zvk.Swapchain{
-//         .A      = A,
-//         .format = zvk.Swapchain.select.format(&supp),
-//         .mode   = zvk.Swapchain.select.mode(&supp),
-//         .size   = zvk.Swapchain.select.size(&supp, sz),
-//         .imgMin = zvk.Swapchain.select.imgMin(&supp),
-//         .ct     = null,
-//         .cfg    = undefined,
-//         .imgs   = undefined,
-//         .views  = undefined,
-//         .sync   = undefined,
-//         };
-//       result.cfg = try zvk.Swapchain.setup(D, S,
-//         result.imgMin, result.format, supp.caps, result.mode,
-//         result.A); //:: result.cfg
-//       // Create the handle
-//       try vk.ok(vk.swapchain.create(D.logical, &result.cfg, result.A.vk, &result.ct));
-//       // Create the Images
-//       result.imgs  = try zvk.Swapchain.images.getList(D, result.ct, result.A);
-//       result.views = try zvk.Swapchain.images.getViews(D, result.imgs, result.format.format, result.A);
-//       result.sync  = try zvk.Swapchain.sync.getList(D, result.views.len, result.A);
-//       return result;
-//     } //:: zvk.Swapchain.create
-//
-//     pub fn destroy (
-//         S : *zvk.Swapchain,
-//         D : zvk.Device,
-//       ) void {
-//       zvk.Swapchain.sync.destroy(&S.sync, D, S.A);
-//       for (S.views) |view| vk.image.view.destroy(D.logical, view, S.A.vk);
-//       vk.swapchain.destroy(D.logical, S.ct, S.A.vk);
-//     } //:: zvk.Swapchain.destroy
-//   }; //:: zvk.Swapchain
-//
 //   pub const CommandBatch = zvk.command.Batch;
 //   pub const command = struct {
 //     pub const Batch = struct {
@@ -1405,59 +1546,8 @@ pub const zvk = struct {
 //       } //:: zvk.command.Batch.destroy
 //     }; //:: zvk.command.Batch
 //   }; //:: zvk.command
-//
-//   pub const sync = struct {
-//     pub const Fence = struct {
-//       A    :zvk.Allocator,
-//       ct   :vk.sync.Fence,
-//       cfg  :vk.sync.fence.Cfg= .{.sType= vk.stype.sync.fence.Cfg, .pNext= null},
-//
-//       pub fn create (
-//         D  : zvk.Device,
-//         in : struct {
-//           signaled :bool= true, },
-//         A  : zvk.Allocator,
-//         ) !zvk.sync.Fence {
-//         var result = zvk.sync.Fence{.A=A, .ct=undefined};
-//         result.cfg.flags = vk.flags.sync.Fence.toInt(.{
-//           .signaled = in.signaled
-//           }); //:: result.cfg.flags
-//         try vk.ok(vk.sync.fence.create(D.logical, &result.cfg, result.A.vk, &result.ct));
-//         return result;
-//       } //:: zvk.sync.Fence.create
-//
-//       pub fn destroy (
-//           F : *zvk.sync.Fence,
-//           D : zvk.Device,
-//         ) void {
-//         vk.sync.fence.destroy(D.logical, F.ct, F.A.vk);
-//       } //:: zvk.sync.Fence.destroy
-//     }; //:: zvk.sync.Fence
-//
-//     pub const Semaphore = struct {
-//       A    :zvk.Allocator,
-//       ct   :vk.sync.Semaphore,
-//       cfg  :vk.sync.semaphore.Cfg= .{.sType= vk.stype.sync.semaphore.Cfg, .pNext= null, .flags= 0},
-//
-//       pub fn create (
-//         D  : zvk.Device,
-//         A  : zvk.Allocator,
-//         ) !zvk.sync.Semaphore {
-//         var result = zvk.sync.Semaphore{.A=A, .ct=undefined};
-//         try vk.ok(vk.sync.semaphore.create(D.logical, &result.cfg, result.A.vk, &result.ct));
-//         return result;
-//       } //:: zvk.sync.Semaphore.create
-//
-//       pub fn destroy (
-//           F : *zvk.sync.Semaphore,
-//           D : zvk.Device,
-//         ) void {
-//         vk.sync.semaphore.destroy(D.logical, F.ct, F.A.vk);
-//       } //:: zvk.sync.Semaphore.destroy
-//     }; //:: zvk.sync.Semaphore
-//   }; //:: zvk.sync
 // }; //:: zvk
-//
+
 
 //:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 //:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::

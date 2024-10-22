@@ -6,7 +6,6 @@ const std = @import("std");
 // @deps zdk
 const zstd = @import("./zstd.zig");
 const zsys = @import("./zsys.zig");
-const zvk  = @import("./zvk.zig").zvk;
 
 
 const shd = struct {
@@ -14,7 +13,7 @@ const shd = struct {
   const frag align(@alignOf(u32)) = @embedFile("shd_frag").*;
 };
 const appName = "Zig | Vulkan-All-the-Things";
-var size      = zvk.Size{.width= 960, .height= 540};
+var size      = zgpu.Size{.width= 960, .height= 540};
 
 //______________________________________
 // @section Entry Point
@@ -22,16 +21,16 @@ var size      = zvk.Size{.width= 960, .height= 540};
 pub fn main () !void {
   var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
   defer arena.deinit();
-  const A = zvk.Allocator.create(arena.allocator());
+  const A = zgpu.Allocator.create(arena.allocator());
 
   try zstd.echo("Hello zvk Entry");
   try zstd.echo(appName);
   var sys = try zsys.init(size.width, size.height, appName);
   var gpu = try tut.Gpu.init(.{
     .appName    = appName,
-    .appVers    = zvk.version.new(0, 0, 1),
+    .appVers    = zgpu.version.new(0, 0, 1),
     .engineName = "zvk | Triangle Engine",
-    .engineVers = zvk.version.new(0, 0, 1),
+    .engineVers = zgpu.version.new(0, 0, 1),
     }, sys.win.ct, A);
   while (!sys.close()) {
     sys.update();
@@ -50,7 +49,7 @@ pub const tut = struct {
 
   pub const render = struct {
     pub const Clear = struct {
-      A     : zvk.Allocator,
+      A     : zgpu.Allocator,
 
       pub fn create (
           S : zgpu.System,
@@ -84,12 +83,12 @@ pub const tut = struct {
     } //:: zgpu.Gpu.update
 
     pub fn init (in:struct {
-        appName    : zvk.String  = zvk.cfg.default.appName,
-        appVers    : zvk.Version = zvk.cfg.default.appVers,
-        engineName : zvk.String  = zvk.cfg.default.engineName,
-        engineVers : zvk.Version = zvk.cfg.default.engineVers, },
+        appName    : zgpu.String  = zgpu.cfg.default.appName,
+        appVers    : zgpu.Version = zgpu.cfg.default.appVers,
+        engineName : zgpu.String  = zgpu.cfg.default.engineName,
+        engineVers : zgpu.Version = zgpu.cfg.default.engineVers, },
         window     : ?*glfw.Window,
-        A          : zvk.Allocator,
+        A          : zgpu.Allocator,
       ) !tut.Gpu {
       var result = Gpu{.system=undefined, .render=undefined};
       result.system = try zgpu.System.create(.{
@@ -116,6 +115,7 @@ pub const tut = struct {
 //:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 pub const zgpu = struct {
   const glfw = @import("./zglfw.zig");
+  const zvk  = @import("./zvk.zig").zvk;
 
   //______________________________________
   // @section zvk Forward Exports
@@ -154,7 +154,7 @@ pub const zgpu = struct {
     dbg       :zvk.Debug,
     device    :zvk.Device,
     surface   :zvk.Surface,
-    // swapchain :zvk.Swapchain,
+    swapchain :zvk.Swapchain,
 
     //______________________________________
     // @section System: Surface
@@ -184,21 +184,21 @@ pub const zgpu = struct {
     //______________________________________
     // @section System: Swapchain
     //____________________________
-    // pub const swapchain = struct {
-    //   /// @descr Returns a Swapchain object with the size of the {@arg window}
-    //   /// @note Makes this library dependent on GLFW
-    //   pub fn create (
-    //       D : zvk.Device,
-    //       S : zvk.Surface,
-    //       W : ?*glfw.Window,
-    //       A : zvk.Allocator,
-    //     ) !zvk.Swapchain {
-    //     var sz = zvk.Size{};
-    //     glfw.framebuffer.size(W, @ptrCast(&sz.width), @ptrCast(&sz.height));
-    //     return zvk.Swapchain.create(D, S, sz, A);
-    //   } //:: zgpu.System.swapchain.create
-    // }; //:: zgpu.System.swapchain
-    //
+    pub const Swapchain = struct {
+      /// @descr Returns a Swapchain object with the size of the {@arg window}
+      /// @note Makes this library dependent on GLFW
+      pub fn create (
+          D : zvk.Device,
+          S : zvk.Surface,
+          W : ?*glfw.Window,
+          A : zvk.Allocator,
+        ) !zvk.Swapchain {
+        var sz = zvk.Size{};
+        glfw.framebuffer.size(W, @ptrCast(&sz.width), @ptrCast(&sz.height));
+        return zvk.Swapchain.create(D, S, sz, A);
+      } //:: zgpu.System.swapchain.create
+    }; //:: zgpu.System.swapchain
+
 
     //______________________________________
     // @section System Management
@@ -209,8 +209,7 @@ pub const zgpu = struct {
       .dbg       = undefined,
       .device    = undefined,
       .surface   = undefined,
-      // .swapchain = undefined, };
-      };
+      .swapchain = undefined, };
     } //:: zgpu.System.empty
 
     pub fn create (in:struct {
@@ -239,12 +238,12 @@ pub const zgpu = struct {
       result.dbg       = try zvk.validation.debug.create(result.instance, &debugCfg, result.A);
       result.surface   = try zgpu.System.Surface.create(result.instance, window, result.A);
       result.device    = try zvk.Device.create(result.instance, result.surface, result.A);
-      // result.swapchain = try zgpu.System.swapchain.create(result.device, result.surface, window, A);
+      result.swapchain = try zgpu.System.Swapchain.create(result.device, result.surface, window, A);
       return result;
     } //:: zgpu.System.create
 
     pub fn destroy (S :*System) !void {
-      // S.swapchain.destroy(S.device);
+      S.swapchain.destroy(S.device);
       S.device.destroy();
       zgpu.System.Surface.destroy(S.instance, S.surface, S.A);
       try zvk.validation.debug.destroy(S.instance, S.dbg, S.A);

@@ -17,6 +17,7 @@ pub const image           = struct {
   pub const destroy       = c.vkDestroyImage;
   pub const Subresource   = c.VkImageSubresourceRange;
 
+  pub const View          = image.view.T;
   pub const view          = struct {
     pub const T           = vk.ImageView;
     pub const Cfg         = c.VkImageViewCreateInfo;
