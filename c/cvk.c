@@ -16,5 +16,6 @@
 #include "./cvk/validation.c"
 #include "./cvk/instance.c"
 #include "./cvk/device.c"
+#include "./cvk/swapchain.c"
 #endif
 

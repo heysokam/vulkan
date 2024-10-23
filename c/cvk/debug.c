@@ -79,12 +79,12 @@ cvk_Debug cvk_debug_create (
 
 /// @descr Destroys a Vulkan Debug Messenger object created with {@link cvk_debug_create}
 void cvk_debug_destroy (
-    cvk_Debug*   const dbg,
-    cvk_Instance const I
+    cvk_Debug*    const dbg,
+    cvk_Instance* const I
   ) {
   if (!dbg->active) return;
-  cvk_debug_getFn_destroy(I.ct);
-  vk_debug.destroy(I.ct, *dbg->ct, dbg->A);
+  cvk_debug_getFn_destroy(I->ct);
+  vk_debug.destroy(I->ct, *dbg->ct, dbg->A);
   free(dbg->ct);
 }
 

@@ -14,8 +14,7 @@
 // @section Device: Queue Families
 //____________________________
 
-/// @descr Returns the Queue Families of the given device.
-static cvk_QueueFamilies cvk_queue_families_create (
+cvk_QueueFamilies cvk_queue_families_create (
     VkPhysicalDevice const device,
     cvk_Surface      const surface
   ) {
@@ -39,8 +38,7 @@ static cvk_QueueFamilies cvk_queue_families_create (
   return result;
 } //:: cvk_queue_families_create
 
-/// @descr Frees the Family Properties list, and sets every other value to empty
-static void cvk_queue_families_destroy (
+void cvk_queue_families_destroy (
     cvk_QueueFamilies* const fams
   ) {
   free(fams->props);
@@ -48,7 +46,6 @@ static void cvk_queue_families_destroy (
   fams->graphics  = Ou32_none();
   fams->present   = Ou32_none();
 } //:: cvk_queue_families_destroy
-
 
 
 //______________________________________

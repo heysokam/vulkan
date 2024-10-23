@@ -20,6 +20,7 @@ typedef struct Gpu {
   cvk_Instance  instance;
   cvk_Surface   surface;
   cvk_Device    device;
+  cvk_Swapchain swapchain;
 } Gpu;
 
 /// @internal
@@ -47,6 +48,23 @@ gpu_Surface gpu_surface_create (cvk_Instance const instance, GLFWwindow* const w
   return result;
 }
 
+/// @descr Returns a Swapchain object with the size of the {@arg window}
+/// @note Makes the library to dependent on GLFW
+cvk_Swapchain gpu_swapchain_create (cvk_Device* const device, GLFWwindow* const window, cvk_Surface const surface, cvk_Allocator const allocator, cvk_Size* const size);
+cvk_Swapchain gpu_swapchain_create (
+    cvk_Device*   const device,
+    GLFWwindow*   const window,
+    cvk_Surface   const surface,
+    cvk_Allocator const allocator,
+    cvk_Size*     const size
+  ) {
+  i32 W = 0; i32 H = 0;
+  glfwGetFramebufferSize(window, &W, &H);
+  size->width  = (u32)W;
+  size->height = (u32)H;
+  return cvk_swapchain_create(device, surface, size, allocator);
+}
+
 typedef struct gpu_init_args_s {
   cstr          appName;
   cdk_Version   appVers;
@@ -54,8 +72,9 @@ typedef struct gpu_init_args_s {
   cdk_Version   engineVers;
   cvk_Allocator allocator;
   GLFWwindow*   window;
+  cvk_Size*     size;
 } gpu_init_args;
-gpu_init_args gpu_init_args_defaults (GLFWwindow* const window) {
+gpu_init_args gpu_init_args_defaults (GLFWwindow* const window, cvk_Size* const size) {
   return (gpu_init_args){
     .appName    = "HelloVulkan | C | Application",
     .appVers    = cdk_version_new(0, 0, 0),
@@ -63,6 +82,7 @@ gpu_init_args gpu_init_args_defaults (GLFWwindow* const window) {
     .engineVers = cdk_version_new(0, 0, 0),
     .allocator  = NULL,
     .window     = window,
+    .size       = size,
   };
 }
 Gpu gpu_init (gpu_init_args in) {
@@ -91,14 +111,17 @@ Gpu gpu_init (gpu_init_args in) {
     /* dbg        */  debugCfg,
     /* A          */  result.A
     ); //:: result.instance
-  result.surface = gpu_surface_create(result.instance, in.window);
-  result.device  = cvk_device_create(result.instance, result.surface, cvk_cfg_device_ForceFirst);
+  result.surface   = gpu_surface_create(result.instance, in.window);
+  result.device    = cvk_device_create(result.instance, result.surface, cvk_cfg_device_ForceFirst);
+  result.swapchain = gpu_swapchain_create(&result.device, in.window, result.surface, result.A, in.size);
   return result;
 }
+
 void gpu_term (Gpu* gpu) {
+  cvk_swapchain_destroy(&gpu->swapchain, &gpu->device.logical);
   cvk_device_destroy(&gpu->device);
   cvk_surface_destroy(gpu->instance.ct, gpu->surface, gpu->instance.A);
-  cvk_debug_destroy(&gpu->instance.dbg, gpu->instance);
+  cvk_debug_destroy(&gpu->instance.dbg, &gpu->instance);
   cvk_instance_destroy(&gpu->instance);
 }
 
@@ -110,13 +133,17 @@ void gpu_update (Gpu* gpu) { discard(gpu); return; }
 void cli_report (void);
 //__________________
 int main (int const argc, char const* argv[argc]) {
+  // Config
+  str      gpu_cfg_title = "c*vk | Hello Vulkan";
+  cvk_Size gpu_cfg_size  = {.width= 960, .height= 540};
+  // Process
   cli_report();
   csys_System sys = csys_init((csys_init_args) {
     // clang-format off
     .win           = (w_init_args){
-      .title       = "c*vk | Hello Vulkan",
-      .width       = 960,
-      .height      = 540,
+      .title       = gpu_cfg_title,
+      .width       = gpu_cfg_size.width,
+      .height      = gpu_cfg_size.height,
       .resize      = false,
       .resizeCB    = w_resize,
       .error       = w_error,
@@ -128,7 +155,7 @@ int main (int const argc, char const* argv[argc]) {
       .mouseScroll = NULL,
       }, // << input
   });  // clang-format on
-  Gpu gpu = gpu_init(gpu_init_args_defaults(sys.win.ct));
+  Gpu gpu = gpu_init(gpu_init_args_defaults(sys.win.ct, &gpu_cfg_size));
   while (!csys_close(&sys)) {
     csys_update(&sys);
     gpu_update(&gpu);
