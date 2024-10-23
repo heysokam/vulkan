@@ -51,5 +51,8 @@ cvk_Instance cvk_instance_create(
   return result;
 }
 
-void cvk_instance_destroy (cvk_Instance* const I) { vkDestroyInstance(I->ct, I->A); }
+void cvk_instance_destroy (cvk_Instance* const I) {
+  vkDestroyInstance(I->ct, I->A);
+  (void)I->A; /*discard*/
+}
 

@@ -5,6 +5,7 @@
 #include <stdio.h>
 #define DEBUG
 // @deps cdk
+#define GLFW_INCLUDE_VULKAN
 #include "./csys.h"
 #include "./cvk.h"
 // @deps Buildsystem SCU
@@ -17,6 +18,7 @@
 typedef struct Gpu {
   cvk_Allocator A;
   cvk_Instance  instance;
+  cvk_Surface   surface;
 } Gpu;
 
 /// @internal
@@ -33,20 +35,33 @@ cstr_List gpu_instance_extensions_get (u32 const listCount, cstr const list[], u
   return result;
 }
 
+typedef cvk_Surface gpu_Surface;
+gpu_Surface gpu_surface_create (cvk_Instance const instance, GLFWwindow* const window);
+gpu_Surface gpu_surface_create (cvk_Instance const instance, GLFWwindow* const window) {
+  /// @descr Returns a valid Vulkan Surface for the {@arg window}
+  /// @todo Forces the library to depend on GLFW
+  cvk_Surface result = NULL;
+  VkResult const code = glfwCreateWindowSurface(instance.ct, window, instance.A, &result);
+  if (code != VK_SUCCESS) { err(code, "Failed to get the Vulkan Surface from the given GLFW window."); }
+  return result;
+}
+
 typedef struct gpu_init_args_s {
   cstr          appName;
   cdk_Version   appVers;
   cstr          engineName;
   cdk_Version   engineVers;
   cvk_Allocator allocator;
+  GLFWwindow*   window;
 } gpu_init_args;
-gpu_init_args gpu_init_args_defaults (void) {
+gpu_init_args gpu_init_args_defaults (GLFWwindow* const window) {
   return (gpu_init_args){
     .appName    = "HelloVulkan | C | Application",
     .appVers    = cdk_version_new(0, 0, 0),
     .engineName = "HelloVulkan | C | Engine",
     .engineVers = cdk_version_new(0, 0, 0),
     .allocator  = NULL,
+    .window     = window,
   };
 }
 Gpu gpu_init (gpu_init_args in) {
@@ -75,9 +90,11 @@ Gpu gpu_init (gpu_init_args in) {
     /* dbg        */  debugCfg,
     /* A          */  result.A
     ); //:: result.instance
+  result.surface = gpu_surface_create(result.instance, in.window);
   return result;
 }
 void gpu_term (Gpu* gpu) {
+  cvk_surface_destroy(gpu->instance.ct, gpu->surface, gpu->instance.A);
   cvk_debug_destroy(&gpu->instance.dbg, gpu->instance);
   cvk_instance_destroy(&gpu->instance);
 }
@@ -108,7 +125,7 @@ int main (int const argc, char const* argv[argc]) {
       .mouseScroll = NULL,
       }, // << input
   });  // clang-format on
-  Gpu gpu = gpu_init(gpu_init_args_defaults());
+  Gpu gpu = gpu_init(gpu_init_args_defaults(sys.win.ct));
   while (!csys_close(&sys)) {
     csys_update(&sys);
     gpu_update(&gpu);

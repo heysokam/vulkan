@@ -4,6 +4,7 @@
 #pragma once
 // @deps External
 #include <vulkan/vulkan.h>
+#include <vulkan/vulkan_core.h>
 // @deps cdk
 #include "./cstd.h"
 #include "./cstr.h"
@@ -21,6 +22,7 @@ typedef struct cvk_Instance cvk_Instance;
 typedef enum cvk_Error {
   cvk_Error_none = 0,
   cvk_Error_extensions,
+  cvk_Error_surface,
   cvk_Error_debug,
   cvk_Error_validation,
   cvk_Error_instance,
@@ -116,4 +118,15 @@ cvk_Instance cvk_instance_create(
   cvk_Allocator         const A
 );
 void cvk_instance_destroy (cvk_Instance* const I);
+
+
+//______________________________________
+// @section Surface
+//____________________________
+typedef VkSurfaceKHR cvk_Surface;
+#define cvk_surface_destroy vkDestroySurfaceKHR
+
+//______________________________________
+// @section Device
+//____________________________
 
