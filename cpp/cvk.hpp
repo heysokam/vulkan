@@ -8,12 +8,14 @@
 #include "./cstr.hpp"
 // @deps External
 #include <vulkan/vulkan.h>
+#include <vulkan/vulkan_core.h>
 
 namespace cvk {
   using StringList = seq<cstr>;
   using Extensions = cvk::StringList;
   using Allocator  = VkAllocationCallbacks*;
   using Userdata   = void*;
+  using Surface    = VkSurfaceKHR;
   enum class Error {
     none = 0,
     extensions, debug, validation,
@@ -128,7 +130,8 @@ namespace cvk {
 
     void destroy (void);
 
-    inline VkInstance handle (void) const { return ct; }
+    inline VkInstance     handle (void) const { return m->ct; }
+    inline cvk::Allocator allo   (void) const { return m->A; }
    private:
     Instance* m = this;
     cvk::Allocator       A;
@@ -138,6 +141,10 @@ namespace cvk {
   }; //:: cvk.Instance
   namespace instance {
     using Flags = VkInstanceCreateFlags;
+  } //:: cvk.instance
+
+  namespace surface {
+    aliasf(destroy, vkDestroySurfaceKHR);
   } //:: cvk.instance
 } //:: cvk
 

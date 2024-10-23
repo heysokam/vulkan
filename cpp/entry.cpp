@@ -36,6 +36,24 @@ namespace gpu {
       return result;
     } //:: gpu.extensions.getList
   } //:: gpu.extensions
+
+  class Surface {
+   public:
+    /// @descr Returns a valid Vulkan Surface for the {@arg window}
+    /// @note Makes the library to dependent on GLFW
+    Surface(cvk::Instance const I, glfw::Window* const W) {
+      VkResult const code = glfwCreateWindowSurface(I.handle(), W, I.allo(), &m->ct);
+      if (code != VK_SUCCESS) { cvk::fail(code, "Failed to get the Vulkan Surface from the given GLFW window."); }
+    }
+    Surface() {}
+
+    void destroy (cvk::Instance const I) {
+      cvk::surface::destroy(I.handle(), m->ct, I.allo());
+    } //:: gpu.Surface.destroy
+   private:
+    Surface* m = this;
+    VkSurfaceKHR ct = NULL;
+  }; //:: gpu.Surface
 } //:: gpu
 
 class Gpu {
@@ -68,6 +86,11 @@ class Gpu {
       /* dbg        */  debugCfg,
       /* A          */  m->A
       );
+
+    //____________________________
+    // Device & Swapchain
+    m->surface = gpu::Surface(m->instance, win->ct);
+
   }; //:: Gpu::Constructor
 
   void update(void) {
@@ -76,7 +99,7 @@ class Gpu {
 
   void term () {
     // m->device.destroy(m->instance);
-    // m->surface.destroy(m->instance);
+    m->surface.destroy(m->instance);
     m->instance.destroy();
   } //:: Gpu.term()
 
@@ -85,7 +108,7 @@ class Gpu {
   cvk::Allocator A;
   str            label;
   cvk::Instance  instance;
-  // cvk::Surface   surface;
+  gpu::Surface   surface;
   // cvk::Device    device;
   // cvk::Swapchain swapchain;
 

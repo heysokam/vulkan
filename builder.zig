@@ -43,8 +43,8 @@ const dir         = struct {
   const glfw      = "./lib/glfw";
 }; //:: dir
 const run         = struct {
-  const C         = true;
-  const Cpp       = false;
+  const C         = false;
+  const Cpp       = true;
   const Zig       = false;
   const Nim       = false;
   const Rust      = false;
