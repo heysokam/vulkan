@@ -94,15 +94,20 @@ cstr* arr_cstr_merge(cstr* one, size_t len1, cstr* two, size_t len2);
 cstr* arr_cstr_merge(cstr* a, size_t len_a, cstr* b, size_t len_b);
 
 
+//______________________________________
+// @section Logging
+//____________________________
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
+#include <assert.h>
 /// @descr Prints the formatted varargs message to console.
 void echof(cstr fmt, ...);
 /// @descr Echoes an error message to stderr.
 void err(i32 code, cstr msg);
 /// @descr Echoes an error message to stderr, and exits the app.
 [[noreturn]] void fail(i32 code, cstr msg);
+
 
 //______________________________________
 // @section Version
@@ -111,6 +116,46 @@ void err(i32 code, cstr msg);
 typedef u32 cdk_Version;
 /// @descr Generates a version number (compatible with Vulkan)
 cdk_Version cdk_version_new(u32 const M, u32 const m, u32 const p);
+
+
+//______________________________________
+// @section Optional types
+//____________________________
+typedef struct Ou32 { u32 value; bool hasValue; u8 priv_pad1; u16 priv_pad2; } Ou32;
+Ou32 Ou32_some (u32 const val);
+Ou32 Ou32_none (void);
+void Ou32_set (Ou32* const it, u32 const val);
+bool Ou32_eq (Ou32 const A, Ou32 const B);
+
+
+//______________________________________
+// @section Type Tools: Floats
+//____________________________
+bool f32_inRange (f32 const val, f32 const minv, f32 const maxv);
+bool f32_zeroToOne (f32 const val);
+
+
+//______________________________________
+// @section Type Tools: Integers Unsigned
+//____________________________
+u32 u32_min (u32 const val, u32 const m);
+u32 u32_max (u32 const val, u32 const M);
+u32 u32_clamp (u32 const val, u32 const m, u32 const M);
+extern const u8  u8_high;
+extern const u16 u16_high;
+extern const u32 u32_high;
+extern const u64 u64_high;
+
+//______________________________________
+// @section Type Tools: Integers Signed
+//____________________________
+extern const i8  i8_high;
+extern const i16 i16_high;
+extern const i32 i32_high;
+extern const i64 i64_high;
+i32 i32_min (i32 const val, i32 const m);
+i32 i32_max (i32 const val, i32 const M);
+i32 i32_clamp (i32 const val, i32 const m, i32 const M);
 
 
 //______________________________________

@@ -14,6 +14,8 @@
 // @section Forward Declares for cvk.Types
 //____________________________
 typedef struct cvk_Instance cvk_Instance;
+typedef struct cvk_QueueFamilies cvk_QueueFamilies;
+typedef struct cvk_device_SwapchainSupport cvk_device_SwapchainSupport;
 
 
 //______________________________________
@@ -26,6 +28,7 @@ typedef enum cvk_Error {
   cvk_Error_debug,
   cvk_Error_validation,
   cvk_Error_instance,
+  cvk_Error_device,
   cvk_Error_max,
 } cvk_Error;
 
@@ -126,7 +129,119 @@ void cvk_instance_destroy (cvk_Instance* const I);
 typedef VkSurfaceKHR cvk_Surface;
 #define cvk_surface_destroy vkDestroySurfaceKHR
 
+
+//______________________________________
+// @section Device: Extensions
+//____________________________
+
+/// @descr Gets a list with the names of all extensions supported by the device
+cstr_List cvk_device_extensions_getList (
+  VkPhysicalDevice const device,
+  u32*             const count);
+/// @descr Returns true if the {@arg device} supports all extensions contained in the {@arg exts} list
+bool cvk_device_extensions_areSupported (
+  VkPhysicalDevice const device,
+  u32              const count,
+  cstr_List        const exts);
+
+
+//______________________________________
+// @section Device: Physical
+//____________________________
+struct cvk_device_Physical {
+  VkPhysicalDevice   ct;
+  VkPhysicalDevice*  all;
+}; typedef struct cvk_device_Physical cvk_device_Physical;
+/// Returns true if the given device is considered suitable to run with the default mvk configuration
+bool cvk_device_physical_isSuitable (
+  VkPhysicalDevice             const device,
+  cvk_QueueFamilies*           const fams,
+  cvk_device_SwapchainSupport* const support);
+/// @descr Returns a Physical Device suitable to run with the default mvk configuration
+cvk_device_Physical cvk_device_physical_create (
+  cvk_Instance const instance,
+  cvk_Surface  const surface,
+  bool         const forceFirst);
+/// @descr Frees the resources stored in the given object.
+void cvk_device_physical_destroy (cvk_device_Physical* D);
+
+
+//______________________________________
+// @section Device: Logical
+//____________________________
+struct cvk_device_Logical {
+  cvk_Allocator       A;
+  VkDevice            ct;
+  VkDeviceCreateInfo  cfg;
+}; typedef struct cvk_device_Logical cvk_device_Logical;
+/// @descr Returns a Logical Device suitable to run with the default mvk configuration
+cvk_device_Logical cvk_device_logical_create (
+  cvk_device_Physical const device,
+  cvk_Surface         const surface,
+  cvk_Allocator       const allocator);
+void cvk_device_logical_destroy (cvk_device_Logical* device);
+
+
+//______________________________________
+// @section Queue
+//____________________________
+struct cvk_QueueFamilies {
+  u32                       propCount;
+  u32                       priv_pad;
+  VkQueueFamilyProperties*  props;
+  Ou32                      graphics;
+  Ou32                      present;
+}; typedef struct cvk_QueueFamilies cvk_QueueFamilies;
+//__________________
+struct cvk_device_SwapchainSupport {
+  VkSurfaceCapabilitiesKHR  caps;
+  u32                       formatCount;
+  VkSurfaceFormatKHR*       formats;
+  u32                       priv_pad1;
+  u32                       modeCount;
+  VkPresentModeKHR*         modes;
+}; typedef struct cvk_device_SwapchainSupport cvk_device_SwapchainSupport;
+/// @descr Returns the Swapchain support information for the given Device+Surface
+/// @note Allocates memory for its formats and modes lists
+cvk_device_SwapchainSupport cvk_device_swapchainSupport_create (
+  VkPhysicalDevice const device,
+  VkSurfaceKHR     const surface);
+/// @descr
+///  Releases all information contained in the given object.
+///  Frees the allocated data, and sets every other value to empty.
+void cvk_device_swapchainSupport_destroy (cvk_device_SwapchainSupport* const support);
+/// @descr Returns true if the device has support for Swapchain creation
+bool cvk_device_swapchainSupport_available (cvk_device_SwapchainSupport* const support);
+//__________________
+struct cvk_QueueEntry {
+  Ou32     id;
+  VkQueue  ct;
+}; typedef struct cvk_QueueEntry cvk_QueueEntry;
+//__________________
+struct cvk_Queue {
+  cvk_QueueEntry  graphics;
+  cvk_QueueEntry  present;
+}; typedef struct cvk_Queue cvk_Queue;
+/// @descr Returns the Queue data of the given Device
+cvk_Queue cvk_queue_create (
+  cvk_device_Physical const physicalDev,
+  cvk_device_Logical  const logicalDev,
+  cvk_Surface         const surface);
+
+
+
 //______________________________________
 // @section Device
 //____________________________
+struct cvk_Device {
+  cvk_device_Physical  physical;
+  cvk_device_Logical   logical;
+  cvk_Queue            queue;
+}; typedef struct cvk_Device cvk_Device;
+/// @descr Returns a complete Device object based on the given configuration options
+cvk_Device cvk_device_create (
+  cvk_Instance const instance,
+  cvk_Surface  const surface,
+  bool         const forceFirst);
+void cvk_device_destroy (cvk_Device* device);
 

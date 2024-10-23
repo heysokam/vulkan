@@ -19,6 +19,7 @@ typedef struct Gpu {
   cvk_Allocator A;
   cvk_Instance  instance;
   cvk_Surface   surface;
+  cvk_Device    device;
 } Gpu;
 
 /// @internal
@@ -27,7 +28,7 @@ typedef struct Gpu {
 cstr_List gpu_instance_extensions_get (u32 const listCount, cstr const list[], u32* const total);
 cstr_List gpu_instance_extensions_get (u32 const listCount, cstr const list[], u32* const total) {
   cstr_List const required = glfwGetRequiredInstanceExtensions(total);
-  if (!required) err(cvk_Error_extensions, "Couldn't find any Vulkan Extensions. Vk is not usable (probably not installed)");
+  if (!required) fail(cvk_Error_extensions, "Couldn't find any Vulkan Extensions. Vk is not usable (probably not installed)");
   cstr exts[listCount];
   for(size_t id = 0; id < listCount; ++id) exts[id] = list[id];
   cstr_List const result = cstr_List_merge(required, (Sz)(*total), exts, listCount);
@@ -42,7 +43,7 @@ gpu_Surface gpu_surface_create (cvk_Instance const instance, GLFWwindow* const w
   /// @todo Forces the library to depend on GLFW
   cvk_Surface result = NULL;
   VkResult const code = glfwCreateWindowSurface(instance.ct, window, instance.A, &result);
-  if (code != VK_SUCCESS) { err(code, "Failed to get the Vulkan Surface from the given GLFW window."); }
+  if (code != VK_SUCCESS) { fail(code, "Failed to get the Vulkan Surface from the given GLFW window."); }
   return result;
 }
 
@@ -91,9 +92,11 @@ Gpu gpu_init (gpu_init_args in) {
     /* A          */  result.A
     ); //:: result.instance
   result.surface = gpu_surface_create(result.instance, in.window);
+  result.device  = cvk_device_create(result.instance, result.surface, cvk_cfg_device_ForceFirst);
   return result;
 }
 void gpu_term (Gpu* gpu) {
+  cvk_device_destroy(&gpu->device);
   cvk_surface_destroy(gpu->instance.ct, gpu->surface, gpu->instance.A);
   cvk_debug_destroy(&gpu->instance.dbg, gpu->instance);
   cvk_instance_destroy(&gpu->instance);
