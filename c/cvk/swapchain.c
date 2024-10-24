@@ -38,9 +38,7 @@ cvk_Size cvk_swapchain_select_size (cvk_device_SwapchainSupport* const support, 
 
 u32 cvk_swapchain_select_imgMin (cvk_device_SwapchainSupport* const support) {
   u32 result = support->caps.minImageCount + 1;
-  if (support->caps.maxImageCount > 0) {
-    result = u32_max(result, support->caps.maxImageCount);
-  }
+  if (support->caps.maxImageCount > 0) { result = u32_max(result, support->caps.maxImageCount); }
   return result;
 } //:: cvk_swapchain_select_imgMin
 

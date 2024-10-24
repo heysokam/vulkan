@@ -50,13 +50,13 @@ gpu_Surface gpu_surface_create (cvk_Instance const instance, GLFWwindow* const w
 
 /// @descr Returns a Swapchain object with the size of the {@arg window}
 /// @note Makes the library to dependent on GLFW
-cvk_Swapchain gpu_swapchain_create (cvk_Device* const device, GLFWwindow* const window, cvk_Surface const surface, cvk_Allocator const allocator, cvk_Size* const size);
+cvk_Swapchain gpu_swapchain_create (cvk_Device* const device, GLFWwindow* const window, cvk_Surface const surface, cvk_Size* const size, cvk_Allocator const allocator);
 cvk_Swapchain gpu_swapchain_create (
     cvk_Device*   const device,
     GLFWwindow*   const window,
     cvk_Surface   const surface,
-    cvk_Allocator const allocator,
-    cvk_Size*     const size
+    cvk_Size*     const size,
+    cvk_Allocator const allocator
   ) {
   i32 W = 0; i32 H = 0;
   glfwGetFramebufferSize(window, &W, &H);
@@ -113,7 +113,7 @@ Gpu gpu_init (gpu_init_args in) {
     ); //:: result.instance
   result.surface   = gpu_surface_create(result.instance, in.window);
   result.device    = cvk_device_create(result.instance, result.surface, cvk_cfg_device_ForceFirst);
-  result.swapchain = gpu_swapchain_create(&result.device, in.window, result.surface, result.A, in.size);
+  result.swapchain = gpu_swapchain_create(&result.device, in.window, result.surface, in.size, result.A);
   return result;
 }
 

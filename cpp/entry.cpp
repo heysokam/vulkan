@@ -2,6 +2,7 @@
 //  vk+  |  Copyright (C) Ivan Mar (sOkam!)  |  GNU GPLv3 or later  :
 //:__________________________________________________________________
 // @deps std
+#include "cglfw.hpp"
 #include <cstddef>
 #include <cstdio>
 #define DEBUG
@@ -17,9 +18,10 @@
 
 
 namespace cfg {
+using Size = cvk::Size;
+
 const str  label     = "vk+";
-const u32  W         = 960;
-const u32  H         = 540;
+      Size size      = {.width= 960, .height= 540};
 const bool resizable = false;
 const cdk::Version appVers    = cdk::version::make(0, 0, 0);
 const cdk::Version engineVers = cdk::version::make(0, 0, 0);
@@ -49,8 +51,8 @@ namespace gpu {
     }
     Surface() {}
 
-    void destroy (cvk::Instance const I) {
-      cvk::surface::destroy(I.handle(), m->ct, m->A);
+    void destroy (cvk::Instance* const I) {
+      cvk::surface::destroy(I->handle(), m->ct, m->A);
     } //:: gpu.Surface.destroy
 
     cvk::Surface handle() { return m->ct; };
@@ -59,11 +61,35 @@ namespace gpu {
     cvk::Allocator A  = NULL;
     cvk::Surface   ct = NULL;
   }; //:: gpu.Surface
+
+  namespace swapchain {
+    cvk::Swapchain create (
+        cvk::Device*   const D,
+        glfw::Window*  const win,
+        cvk::Surface   const S,
+        cvk::Size*     const size,
+        cvk::Allocator const A
+      ) {
+      i32 W = 0; i32 H = 0;
+      glfwGetFramebufferSize(win, &W, &H);
+      size->width  = (u32)W;
+      size->height = (u32)H;
+      return cvk::Swapchain(D, S, size, A);
+    } //:: gpu.swapchain.create
+  } //:: gpu.swapchain
 } //:: gpu
 
-class Gpu {
+class Gpu { Gpu* m = this;
+ private:
+  cvk::Allocator A;
+  str            label;
+  cvk::Instance  instance;
+  gpu::Surface   surface;
+  cvk::Device    device;
+  cvk::Swapchain swapchain;
+
  public:
-  Gpu (str label, cdk::Version appVers, cdk::Version engineVers, csys::Window* win, cvk::Allocator A) {
+  Gpu (str label, cdk::Version appVers, cdk::Version engineVers, csys::Window* win, cvk::Size* size, cvk::Allocator A) {
     m->A     = A;
     m->label = label;
     //____________________________
@@ -94,9 +120,9 @@ class Gpu {
 
     //____________________________
     // Device & Swapchain
-    m->surface = gpu::Surface(m->instance, win->ct, m->A);
-    m->device  = cvk::Device(m->instance, m->surface.handle(), cvk::cfg::device::forceFirst, m->A);
-
+    m->surface   = gpu::Surface(m->instance, win->ct, m->A);
+    m->device    = cvk::Device(&m->instance, m->surface.handle(), cvk::cfg::device::forceFirst, m->A);
+    m->swapchain = gpu::swapchain::create(&m->device, win->ct, m->surface.handle(), size, m->A);
   }; //:: Gpu::Constructor
 
   void update(void) {
@@ -104,21 +130,12 @@ class Gpu {
   };
 
   void term () {
+    m->swapchain.destroy(&m->device);
     m->device.destroy();
-    m->surface.destroy(m->instance);
+    m->surface.destroy(&m->instance);
     m->instance.destroy();
   } //:: Gpu.term()
-
- private:
-  Gpu* m = this;
-  cvk::Allocator A;
-  str            label;
-  cvk::Instance  instance;
-  gpu::Surface   surface;
-  cvk::Device    device;
-  // cvk::Swapchain swapchain;
-
-};
+}; //:: Gpu
 
 //______________________________________
 // @section Entry Point
@@ -126,8 +143,8 @@ class Gpu {
 namespace cli { void report (void); }
 i32 main (i32 const argc, cstr argv[argc]) {
   cli::report();
-  csys::System sys(cfg::label + " | Example", cfg::W, cfg::H, cfg::resizable);
-  Gpu gpu(cfg::label, cfg::appVers, cfg::engineVers, &sys.win, nullptr);
+  csys::System sys(cfg::label + " | Example", cfg::size.width, cfg::size.height, cfg::resizable);
+  Gpu gpu(cfg::label, cfg::appVers, cfg::engineVers, &sys.win, &cfg::size, nullptr);
   while (!sys.close()) {
     sys.update();
     gpu.update();

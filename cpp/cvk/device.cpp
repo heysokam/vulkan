@@ -18,24 +18,24 @@ cvk::device::SwapchainSupport::SwapchainSupport(
   // Get the Capabilities
   VkResult code;
   code = vkGetPhysicalDeviceSurfaceCapabilitiesKHR(D, S, &m->caps);
-  if (code != VK_SUCCESS) { fail(code, "Failed to retrieve the Swapchain Surface capabilities for the selected device."); }
+  if (code != VK_SUCCESS) { cvk::fail(code, "Failed to retrieve the Swapchain Surface capabilities for the selected device."); }
   // Get the Formats
   u32 formatCount = 0;
   code = vkGetPhysicalDeviceSurfaceFormatsKHR(D, S, &formatCount, NULL);
-  if (code != VK_SUCCESS) { fail(code, "Failed to retrieve the number of Swapchain Formats for the selected device."); }
+  if (code != VK_SUCCESS) { cvk::fail(code, "Failed to retrieve the number of Swapchain Formats for the selected device."); }
   if (formatCount > 0) {
     m->formats = seq<VkSurfaceFormatKHR>(formatCount);
     code = vkGetPhysicalDeviceSurfaceFormatsKHR(D, S, &formatCount, m->formats.data());
-    if (code != VK_SUCCESS) { fail(code, "Failed to retrieve the list of Swapchain Formats for the selected device."); }
+    if (code != VK_SUCCESS) { cvk::fail(code, "Failed to retrieve the list of Swapchain Formats for the selected device."); }
   }
   // Get the Present Modes
   u32 modeCount = 0;
   code = vkGetPhysicalDeviceSurfacePresentModesKHR(D, S, &modeCount, NULL);
-  if (code != VK_SUCCESS) { fail(code, "Failed to retrieve the number of Swapchain Present Modes for the selected device."); }
+  if (code != VK_SUCCESS) { cvk::fail(code, "Failed to retrieve the number of Swapchain Present Modes for the selected device."); }
   if (modeCount > 0) {
     m->modes = seq<VkPresentModeKHR>(modeCount);
     code = vkGetPhysicalDeviceSurfacePresentModesKHR(D, S, &modeCount, m->modes.data());
-    if (code != VK_SUCCESS) { fail(code, "Failed to retrieve the list of Swapchain Present Modes for the selected device."); }
+    if (code != VK_SUCCESS) { cvk::fail(code, "Failed to retrieve the list of Swapchain Present Modes for the selected device."); }
   }
 } //:: cvk.device.SwapchainSupport.Constructor
 
@@ -57,7 +57,9 @@ cvk::device::queue::Families::Families(
   }
 } //:: cvk.device.queue.Families.Constructor
 
-seq<cstr> cvk::device::extensions::getList (VkPhysicalDevice const D) {
+seq<cstr> cvk::device::extensions::getList (
+    VkPhysicalDevice const D
+  ) {
   u32 propCount;
   vkEnumerateDeviceExtensionProperties(D, NULL, &propCount, NULL);
   seq<VkExtensionProperties> props = seq<VkExtensionProperties>(propCount);
@@ -83,43 +85,41 @@ namespace cvk { namespace device { namespace extensions {
 }}} //:: cvk.device.extensions
 
 bool cvk::device::physical::isSuitable (
-    VkPhysicalDevice               const D,
-    cvk::device::queue::Families*  const fams,
-    cvk::device::SwapchainSupport* const support
+    VkPhysicalDevice              const D,
+    cvk::device::queue::Families  const fams,
+    cvk::device::SwapchainSupport const support
   ) {
   VkPhysicalDeviceProperties props = {0};
   vkGetPhysicalDeviceProperties(D, &props);
   return props.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU
-      && fams->graphics.has_value()
-      && fams->present.has_value()
+      && fams.graphics.has_value()
+      && fams.present.has_value()
       && cvk::device::extensions::supported(D, cvk::device::extensions::List)
-      && support->available();
+      && support.available();
 } //:: cvk_device_physical_isSuitable
 
 cvk::device::Physical::Physical (
-    cvk::Instance  const I,
+    cvk::Instance* const I,
     cvk::Surface   const S,
     bool           const forceFirst,
     cvk::Allocator const A
   ) {
   // Find the list of all Physical Devices
   u32 count;
-  VkResult code = vkEnumeratePhysicalDevices(I.handle(), &count, NULL);
+  VkResult code = vkEnumeratePhysicalDevices(I->handle(), &count, NULL);
   if (code != VK_SUCCESS) { cvk::fail(code, "Failed when searching for GPUs with Vulkan support."); }
-  if (!count) { fail(cvk::Error::device, "Failed to find any GPUs with Vulkan support."); }
+  if (!count) { cvk::fail(cvk::Error::device, "Failed to find any GPUs with Vulkan support."); }
   m->all = seq<VkPhysicalDevice>(count);
-  code = vkEnumeratePhysicalDevices(I.handle(), &count, m->all.data());
-  if (code != VK_SUCCESS) { fail(code, "Failed to retrieve the list of GPUs."); }
+  code = vkEnumeratePhysicalDevices(I->handle(), &count, m->all.data());
+  if (code != VK_SUCCESS) { cvk::fail(code, "Failed to retrieve the list of GPUs."); }
   // Find the Physical Device that we want
-  for(size_t id = 0; id < count; ++id) {
-    if (forceFirst) { m->ct = m->all[0]; break; }
-    cvk::device::queue::Families  fam     = cvk::device::queue::Families(m->all[id], S);
-    cvk::device::SwapchainSupport support = cvk::device::SwapchainSupport(m->all[id], S);
-    if (cvk::device::physical::isSuitable(m->all[id], &fam, &support)) {
-      m->ct = m->all[id]; break;
+  for (auto const device : m->all) {
+    if (forceFirst) { m->ct = device; break; }
+    if (cvk::device::physical::isSuitable(device, cvk::device::queue::Families(device, S), cvk::device::SwapchainSupport(device, S))) {
+      m->ct = device; break;
     }
   }
-  if (m->ct == NULL) { fail(cvk::Error::device, "Failed to find any suitable GPU."); }
+  if (m->ct == NULL) { cvk::fail(cvk::Error::device, "Failed to find any suitable GPU."); }
 } //:: cvk.device.Physical.Constructor
 
 void cvk::device::Physical::destroy (void) {
@@ -198,7 +198,7 @@ cvk::device::Queue::Queue (
 } //:: cvk.device.Queue.Constructor
 
 cvk::Device::Device(
-    cvk::Instance  const I,
+    cvk::Instance* const I,
     cvk::Surface   const S,
     bool           const forceFirst,
     cvk::Allocator const A

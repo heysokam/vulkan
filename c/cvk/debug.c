@@ -96,7 +96,7 @@ VkBool32 cvk_debug_cb (
     void*                                  const        userdata
   ) {
   (void)userdata; /*discard*/
-  printf("[Vulkan Validation] (%d %d) : %s\n", types, severity, cbdata->pMessage);
+  printf("[vulkan.c] (%d %d) : %s\n", types, severity, cbdata->pMessage);
   return false;
 }
 

@@ -12,6 +12,8 @@
 
 namespace cvk {
   using StringList = seq<cstr>;
+  using Size       = VkExtent2D;
+  using Vol        = VkExtent3D;
   using Extensions = cvk::StringList;
   using Allocator  = VkAllocationCallbacks*;
   using Userdata   = void*;
@@ -58,7 +60,7 @@ namespace cvk {
         void*                                  const        userdata
       ) {
       (void)userdata; /*discard*/
-      printf("[Vulkan Validation] (%d %d) : %s\n", types, severity, cbdata->pMessage);
+      printf("[vulkan.cpp] (%d %d) : %s\n", types, severity, cbdata->pMessage);
       return false;
     } //:: cvk.debug.cb
   }; //:: cvk.debug
@@ -147,16 +149,16 @@ namespace cvk {
 
   namespace device {
     class SwapchainSupport { SwapchainSupport* m = this;
-     private:
+     public:
       VkSurfaceCapabilitiesKHR  caps;
       seq<VkSurfaceFormatKHR>   formats;
       seq<VkPresentModeKHR>     modes;
-     public:
+
       SwapchainSupport(
         VkPhysicalDevice const device,
         cvk::Surface     const surface);
 
-      bool available () { return m->formats.size() > 0 && m->modes.size() > 0; }
+      inline bool available () const { return m->formats.size() > 0 && m->modes.size() > 0; }
     }; //:: cvk.device.SwapchainSupport
 
     namespace extensions {
@@ -186,7 +188,7 @@ namespace cvk {
         VkPhysicalDevice      ct;
         seq<VkPhysicalDevice> all;
        public:
-        Physical(cvk::Instance I, cvk::Surface S, bool forceFirst, cvk::Allocator A);
+        Physical(cvk::Instance* I, cvk::Surface S, bool forceFirst, cvk::Allocator A);
         Physical() {};
         void destroy (void);
         inline VkPhysicalDevice handle (void) const { return m->ct; }
@@ -194,9 +196,9 @@ namespace cvk {
       using T = cvk::device::physical::Physical;
 
       bool isSuitable (
-        VkPhysicalDevice               const D,
-        cvk::device::queue::Families*  const fams,
-        cvk::device::SwapchainSupport* const support);
+        VkPhysicalDevice              const D,
+        cvk::device::queue::Families  const fams,
+        cvk::device::SwapchainSupport const support);
     }; //:: cvk.device.physical
     using Physical = cvk::device::physical::T;
 
@@ -235,18 +237,78 @@ namespace cvk {
       }; //:: cvk.device.Queue
     }; //:: cvk.device.queue
     using Queue = cvk::device::queue::Queue;
-  } //:: cvk.device
 
-  class Device {
-   private:
-    Device* m = this;
-    cvk::device::Physical physical;
-    cvk::device::Logical  logical;
-    cvk::device::Queue    queue;
-   public:
-    Device(cvk::Instance I, cvk::Surface S, bool forceFirst, cvk::Allocator A);
-    Device() {};
-    void destroy (void);
-  }; //:: cvk.Device
+    class Device { Device* m = this;
+     public:
+      cvk::device::Physical physical;
+      cvk::device::Logical  logical;
+      cvk::device::Queue    queue;
+
+      Device(cvk::Instance* I, cvk::Surface S, bool forceFirst, cvk::Allocator A);
+      Device() {};
+      void destroy (void);
+    }; //:: cvk.device.T
+  } //:: cvk.device
+  using Device = cvk::device::Device;
+
+  namespace swapchain {
+    namespace select {
+      VkSurfaceFormatKHR format (cvk::device::SwapchainSupport* const S);
+      VkPresentModeKHR   mode   (cvk::device::SwapchainSupport* const S);
+      cvk::Size          size   (cvk::device::SwapchainSupport* const S, cvk::Size* const prev);
+      u32                imgMin (cvk::device::SwapchainSupport* const S);
+    } //:: cvk.swapchain.select
+
+
+    class Image { Image* m = this;
+     public:
+      cvk::Allocator         A;
+      VkImage                ct;
+      VkImageView            view;
+      VkImageViewCreateInfo  cfg;
+      Image (
+        VkImage            const img,
+        VkDevice           const D,
+        VkSurfaceFormatKHR const format,
+        cvk::Allocator     const A);
+      Image () {}
+      void destroy (void);
+    }; //:: cvk.swapchain.Image
+    namespace images {
+      using List = seq<cvk::swapchain::Image>;
+      List create (
+        VkDevice           const D,
+        VkSwapchainKHR     const S,
+        VkSurfaceFormatKHR const format,
+        cvk::Allocator     const A);
+      void destroy (
+        cvk::swapchain::images::List L,
+        cvk::Device*                 D);
+    } //:: cvk.swapchain.images
+    using Images = cvk::swapchain::images::List;
+
+    class Swapchain { Swapchain* m = this;
+      cvk::Allocator            A;
+      VkSwapchainKHR            ct;
+      VkSwapchainCreateInfoKHR  cfg;
+      VkSurfaceFormatKHR        format;
+      VkPresentModeKHR          mode;
+      cvk::Size                 size;
+      u32                       priv_pad;
+      u32                       imgMin;
+      cvk::swapchain::Images    images;
+
+     public:
+      Swapchain (
+        cvk::Device*   const D,
+        cvk::Surface   const S,
+        cvk::Size*     const size,
+        cvk::Allocator const A);
+      Swapchain () {}
+      void destroy (cvk::Device* D);
+    }; //:: cvk.swapchain.T
+  } //:: cvk.swapchain
+  using Swapchain = cvk::swapchain::Swapchain;
+
 } //:: cvk
 

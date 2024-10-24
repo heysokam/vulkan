@@ -8,5 +8,6 @@
 #include "./cvk/debug.cpp"
 #include "./cvk/instance.cpp"
 #include "./cvk/device.cpp"
+#include "./cvk/swapchain.cpp"
 #endif
 

@@ -145,6 +145,17 @@ inline bool cstr_seq_contains (seq<cstr> const list, cstr const val) {
 inline bool f32_inRange (f32 const val, f32 const minv, f32 const maxv) {  return val >= minv && val <= maxv;}
 inline bool f32_zeroToOne (f32 const val) {  return f32_inRange(val, 0.0, 1.0);}
 
+//______________________________________
+/// @section Type Tools: Integers Unsigned
+//____________________________
+const u8  u8_high  = (u8 )(~0);
+const u16 u16_high = (u16)(~0);
+const u32 u32_high = (u32)(~0);
+const u64 u64_high = (u64)(~0);
+inline u32 u32_min (u32 const val, u32 const m) {  return (val < m) ? m : val;}
+inline u32 u32_max (u32 const val, u32 const M) {  return (val > M) ? M : val;}
+inline u32 u32_clamp (u32 const val, u32 const m, u32 const M) {  return u32_max(u32_min(val, m), M);}
+
 
 //______________________________________
 // @section Version
