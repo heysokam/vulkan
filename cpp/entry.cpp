@@ -2,6 +2,7 @@
 //  vk+  |  Copyright (C) Ivan Mar (sOkam!)  |  GNU GPLv3 or later  :
 //:__________________________________________________________________
 // @deps std
+#include <cstddef>
 #include <cstdio>
 #define DEBUG
 // @deps cdk
@@ -41,18 +42,22 @@ namespace gpu {
    public:
     /// @descr Returns a valid Vulkan Surface for the {@arg window}
     /// @note Makes the library to dependent on GLFW
-    Surface(cvk::Instance const I, glfw::Window* const W) {
+    Surface(cvk::Instance const I, glfw::Window* const W, cvk::Allocator A) {
+      m->A = A;
       VkResult const code = glfwCreateWindowSurface(I.handle(), W, I.allo(), &m->ct);
       if (code != VK_SUCCESS) { cvk::fail(code, "Failed to get the Vulkan Surface from the given GLFW window."); }
     }
     Surface() {}
 
     void destroy (cvk::Instance const I) {
-      cvk::surface::destroy(I.handle(), m->ct, I.allo());
+      cvk::surface::destroy(I.handle(), m->ct, m->A);
     } //:: gpu.Surface.destroy
+
+    cvk::Surface handle() { return m->ct; };
    private:
     Surface* m = this;
-    VkSurfaceKHR ct = NULL;
+    cvk::Allocator A  = NULL;
+    cvk::Surface   ct = NULL;
   }; //:: gpu.Surface
 } //:: gpu
 
@@ -89,7 +94,8 @@ class Gpu {
 
     //____________________________
     // Device & Swapchain
-    m->surface = gpu::Surface(m->instance, win->ct);
+    m->surface = gpu::Surface(m->instance, win->ct, m->A);
+    m->device  = cvk::Device(m->instance, m->surface.handle(), cvk::cfg::device::forceFirst, m->A);
 
   }; //:: Gpu::Constructor
 
@@ -98,7 +104,7 @@ class Gpu {
   };
 
   void term () {
-    // m->device.destroy(m->instance);
+    m->device.destroy();
     m->surface.destroy(m->instance);
     m->instance.destroy();
   } //:: Gpu.term()
@@ -109,7 +115,7 @@ class Gpu {
   str            label;
   cvk::Instance  instance;
   gpu::Surface   surface;
-  // cvk::Device    device;
+  cvk::Device    device;
   // cvk::Swapchain swapchain;
 
 };

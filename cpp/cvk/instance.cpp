@@ -42,11 +42,6 @@ cvk::Instance::Instance(
   m->dbg = cvk::Debug(m->ct, dbg, validate, A);
 }
 
-/* cvk::Instance::~Instance() { */
-/*   m->dbg.destroy(*m); */
-/*   vkDestroyInstance(m->ct, m->A); */
-/* } */
-
 void cvk::Instance::destroy (void) {
   m->dbg.destroy(*m);
   vkDestroyInstance(m->ct, m->A);

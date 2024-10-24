@@ -19,7 +19,7 @@ namespace cvk {
   enum class Error {
     none = 0,
     extensions, debug, validation,
-    instance,
+    instance, surface, device, swapchain,
   };
   aliasf(fail, cdk::fail);
 
@@ -85,8 +85,12 @@ namespace cvk {
   }
 
   class Instance;
-  class Debug {
-    Debug* m = this;
+  class Debug { Debug* m = this;
+   private:
+    cvk::Allocator  A;
+    cvk::debug::T   ct;
+    cvk::debug::Cfg cfg;
+    bool            active;
    public:
     /// @descr Creates a Vulkan Debug Messenger using the given {@arg cfg} configuration
     Debug(
@@ -99,11 +103,6 @@ namespace cvk {
     ~Debug() {};
     /// @descr Destroys a Vulkan Debug Messenger object created with {@link cvk::Debug constructor}
     void destroy (cvk::Instance const I);
-   private:
-    cvk::Allocator  A;
-    cvk::debug::T   ct;
-    cvk::debug::Cfg cfg;
-    bool            active;
   }; //:: cvk.Debug
 
   using Version = cdk::Version;
@@ -111,7 +110,12 @@ namespace cvk {
     using T = cvk::Version;
   } //:: cvk.version
 
-  class Instance {
+  class Instance { Instance* m = this;
+   private:
+    cvk::Allocator       A;
+    VkInstance           ct;
+    VkInstanceCreateInfo cfg;
+    cvk::Debug           dbg;
    public:
     Instance(
       str                   const appName,
@@ -132,12 +136,6 @@ namespace cvk {
 
     inline VkInstance     handle (void) const { return m->ct; }
     inline cvk::Allocator allo   (void) const { return m->A; }
-   private:
-    Instance* m = this;
-    cvk::Allocator       A;
-    VkInstance           ct;
-    VkInstanceCreateInfo cfg;
-    cvk::Debug           dbg;
   }; //:: cvk.Instance
   namespace instance {
     using Flags = VkInstanceCreateFlags;
@@ -145,6 +143,110 @@ namespace cvk {
 
   namespace surface {
     aliasf(destroy, vkDestroySurfaceKHR);
-  } //:: cvk.instance
+  } //:: cvk.surface
+
+  namespace device {
+    class SwapchainSupport { SwapchainSupport* m = this;
+     private:
+      VkSurfaceCapabilitiesKHR  caps;
+      seq<VkSurfaceFormatKHR>   formats;
+      seq<VkPresentModeKHR>     modes;
+     public:
+      SwapchainSupport(
+        VkPhysicalDevice const device,
+        cvk::Surface     const surface);
+
+      bool available () { return m->formats.size() > 0 && m->modes.size() > 0; }
+    }; //:: cvk.device.SwapchainSupport
+
+    namespace extensions {
+      seq<cstr> getList (VkPhysicalDevice const D);
+      bool supported (
+        VkPhysicalDevice const device,
+        seq<cstr>        const exts);
+    } //:: cvk.device.extensions
+
+    namespace queue {
+      class Families { Families* m = this;
+       public:
+        seq<VkQueueFamilyProperties>  props;
+        cdk::Opt<u32>                 graphics;
+        cdk::Opt<u32>                 present;
+
+        Families(
+         VkPhysicalDevice const D,
+         cvk::Surface     const S);
+      }; //:: cvk.device.queue.Families
+    };
+
+    namespace physical {
+      class Physical { Physical* m = this;
+       private:
+        cvk::Allocator        A;
+        VkPhysicalDevice      ct;
+        seq<VkPhysicalDevice> all;
+       public:
+        Physical(cvk::Instance I, cvk::Surface S, bool forceFirst, cvk::Allocator A);
+        Physical() {};
+        void destroy (void);
+        inline VkPhysicalDevice handle (void) const { return m->ct; }
+      }; //:: cvk.device.Physical
+      using T = cvk::device::physical::Physical;
+
+      bool isSuitable (
+        VkPhysicalDevice               const D,
+        cvk::device::queue::Families*  const fams,
+        cvk::device::SwapchainSupport* const support);
+    }; //:: cvk.device.physical
+    using Physical = cvk::device::physical::T;
+
+    class Logical { Logical* m = this;
+     private:
+      cvk::Allocator     A;
+      VkDevice           ct;
+      VkDeviceCreateInfo cfg;
+     public:
+      Logical(cvk::device::Physical D, cvk::Surface S, cvk::Allocator A);
+      Logical() {};
+      void destroy (void);
+      inline VkDevice handle (void) const { return m->ct; }
+    }; //:: cvk.device.Logical
+
+    namespace queue {
+      namespace entry {
+        class Entry { Entry* m = this;
+          VkQueue ct;
+          u32     id;
+         public:
+          Entry(
+            cvk::device::Logical  const D,
+            u32                   const id);
+        }; //:: cvk.device.queue.entry.T
+      }; //:: cvk.device.queue.entry
+      using Entry = cdk::Opt<cvk::device::queue::entry::Entry>;
+
+      class Queue { Queue* m = this;
+       private:
+        cvk::device::queue::Entry graphics;
+        cvk::device::queue::Entry present;
+      public:
+        Queue(cvk::device::Physical P, cvk::device::Logical L, cvk::Surface S, cvk::Allocator A);
+        Queue() {};
+      }; //:: cvk.device.Queue
+    }; //:: cvk.device.queue
+    using Queue = cvk::device::queue::Queue;
+  } //:: cvk.device
+
+  class Device {
+   private:
+    Device* m = this;
+    cvk::device::Physical physical;
+    cvk::device::Logical  logical;
+    cvk::device::Queue    queue;
+   public:
+    Device(cvk::Instance I, cvk::Surface S, bool forceFirst, cvk::Allocator A);
+    Device() {};
+    void destroy (void);
+  }; //:: cvk.Device
 } //:: cvk
 

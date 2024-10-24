@@ -74,10 +74,7 @@ static cvk_QueueEntry cvk_queue_graphicsCreate (
     cvk_QueueFamilies const* const fams
   ) {
   /// @descr Returns the Graphics Queue data of the given Device
-  cvk_QueueEntry result =(cvk_QueueEntry){
-    .id= Ou32_none(),
-    .ct= NULL,
-    };
+  cvk_QueueEntry result = (cvk_QueueEntry){.id= Ou32_none(), .ct= NULL};
   result.id = fams->graphics;
   vkGetDeviceQueue(device.ct, result.id.value, 0, &result.ct);
   return result;
@@ -159,7 +156,7 @@ bool cvk_device_swapchainSupport_available (cvk_device_SwapchainSupport* const s
 //____________________________
 
 #define cvk_device_extensions_Max 1
-const/*comptime*/ static cstr cvk_device_extensions_List[cvk_device_extensions_Max] = {
+const static cstr cvk_device_extensions_List[cvk_device_extensions_Max] = {
   [0]= VK_KHR_SWAPCHAIN_EXTENSION_NAME,
 };
 
@@ -329,7 +326,7 @@ cvk_Device cvk_device_create (
 void cvk_device_destroy (
     cvk_Device* device
   ) {
-  cvk_device_physical_destroy(&device->physical);
   cvk_device_logical_destroy(&device->logical);
+  cvk_device_physical_destroy(&device->physical);
 } //:: cvk_device_destroy
 

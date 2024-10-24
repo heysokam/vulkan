@@ -10,6 +10,7 @@
 //____________________________
 #include <cstdint>
 #include <cstddef>
+#include <cstring>
 using byte = uint8_t;
 using u8   = uint8_t;
 using u16  = uint16_t;
@@ -123,6 +124,29 @@ enum class Error { fail, warn };
 
 
 //______________________________________
+// @section Strings
+//____________________________
+
+/// @descr Returns true if the {@arg list} of strings contains the {@arg val} string
+inline bool str_seq_contains (seq<str> const list, str const val) {
+  for (auto const A : list) if (A.compare(val) == 0) return true;
+  return false;
+}
+/// @descr Returns true if the {@arg list} of strings contains the {@arg val} string
+inline bool cstr_seq_contains (seq<cstr> const list, cstr const val) {
+  for (auto const A : list) if (strcmp(A, val) == 0) return true;
+  return false;
+}
+
+
+//______________________________________
+/// @section Type Tools: Floats
+//____________________________
+inline bool f32_inRange (f32 const val, f32 const minv, f32 const maxv) {  return val >= minv && val <= maxv;}
+inline bool f32_zeroToOne (f32 const val) {  return f32_inRange(val, 0.0, 1.0);}
+
+
+//______________________________________
 // @section Version
 //____________________________
 namespace cdk {
@@ -140,6 +164,12 @@ namespace cdk {
       return cdk::version::make_api(0, M,m,p);
     } // cdk.version.make
   } // namespace version
+
+  //______________________________________
+  // @section Optionals
+  //____________________________
+  #include <optional>
+  template <typename T> using Opt = std::optional<T>;
 
   //______________________________________
   // @section Systems aliasing

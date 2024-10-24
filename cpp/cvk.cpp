@@ -7,5 +7,6 @@
 #include "./cvk/cfg.cpp"
 #include "./cvk/debug.cpp"
 #include "./cvk/instance.cpp"
+#include "./cvk/device.cpp"
 #endif
 
