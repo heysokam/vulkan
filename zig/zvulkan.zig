@@ -22,6 +22,9 @@ pub usingnamespace @import("./zvulkan/image.zig");
 pub usingnamespace @import("./zvulkan/swapchain.zig");
 // Rendering
 pub usingnamespace @import("./zvulkan/command.zig");
+pub usingnamespace @import("./zvulkan/shader.zig");
+pub usingnamespace @import("./zvulkan/pipeline.zig");
+pub usingnamespace @import("./zvulkan/framebuffer.zig");
 // Synchronization
 pub usingnamespace @import("./zvulkan/sync.zig");
 

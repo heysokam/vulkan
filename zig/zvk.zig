@@ -22,9 +22,21 @@ pub const zvk = struct {
   pub const Surface  = vk.Surface;
   pub const ok       = vk.ok;
 
-  pub const Color = struct {
+
+  //______________________________________
+  // @section Color Tools
+  //____________________________
+  pub const color= struct {
     pub const Format = vk.color.Format;
-  }; //:: zvk.Color
+    pub const rgba = struct {
+      pub fn T (comptime t :type) type {
+        return struct {r :t, g :t, b :t, a :t};
+      } //:: zvk.color.rgba.T
+      pub const F32 = zvk.color.rgba.T(f32);
+      pub const U8  = zvk.color.rgba.T(u8);
+    }; //:: zvk.color.rgba
+  }; //:: zvk.color
+
 
   //______________________________________
   // @section Allocator
@@ -45,6 +57,14 @@ pub const zvk = struct {
   // @section Configuration and Defaults
   //____________________________
   pub const cfg = struct {
+    pub const default = struct {
+      pub const version    = zvk.version.api.v1_3;
+      pub const appName    = "zvk.Application";
+      pub const appVers    = zvk.version.new(0, 0, 0);
+      pub const engineName = "zvk.Engine";
+      pub const engineVers = zvk.version.new(0, 0, 0);
+    }; //:: zvk.cfg.default
+
     pub const debug = struct {
       pub const flags    = vk.validation.debug.flags.Create{};  // #define Cfg_DebugFlags 0
       pub const severity = vk.validation.debug.flags.Severity{  // Cfg_DebugSeverity
@@ -91,13 +111,15 @@ pub const zvk = struct {
       }; //:: zvk.cfg.swapchain.color
     }; //:: zvk.cfg.swapchain
 
-    pub const default = struct {
-      pub const version    = zvk.version.api.v1_3;
-      pub const appName    = "zvk.Application";
-      pub const appVers    = zvk.version.new(0, 0, 0);
-      pub const engineName = "zvk.Engine";
-      pub const engineVers = zvk.version.new(0, 0, 0);
-    }; //:: zvk.cfg.default
+    pub const shader = struct {
+      pub const EntryPoint :zvk.String= "main";
+    }; //:: zvk.cfg.shader
+
+    pub const render = struct {
+      pub const depth = struct {
+        pub const reversed = true;
+      }; //:: zvk.cfg.render.depth
+    }; //:: zvk.cfg.render
 
     pub const command = struct {
       pub const reset     = true;
@@ -1132,7 +1154,7 @@ pub const zvk = struct {
         pub fn create (
             I : vk.Image,
             D : zvk.Device.Logical,
-            C : zvk.Color.Format,
+            C : zvk.color.Format,
             A : zvk.Allocator,
           ) !zvk.Swapchain.Image.View {
           var result = zvk.Swapchain.Image.View{
@@ -1177,7 +1199,7 @@ pub const zvk = struct {
       pub fn create (
           I : vk.Image,
           D : zvk.Device.Logical,
-          C : zvk.Color.Format,
+          C : zvk.color.Format,
           A : zvk.Allocator,
         ) !zvk.Swapchain.Image {
         return zvk.Swapchain.Image{
@@ -1268,7 +1290,7 @@ pub const zvk = struct {
       pub fn create (
           D : zvk.Device.Logical,
           S : vk.Swapchain,
-          C : zvk.Color.Format,
+          C : zvk.color.Format,
           A : zvk.Allocator,
         ) !zvk.Swapchain.Image.List {
         // Create the resulting images
@@ -1299,6 +1321,7 @@ pub const zvk = struct {
         return S.imgs[id];
       } //:: zvk.Swapchain.images.next
     }; //:: zvk.Swapchain.images
+
 
     //______________________________________
     // @section Swapchain: Sync
@@ -1435,7 +1458,460 @@ pub const zvk = struct {
     } //:: zvk.Swapchain.destroy
   }; //:: zvk.Swapchain
 
+
+  //______________________________________
+  // @section Shaders
+  //____________________________
+  pub const Shader = shader.Graphics;
+  pub const shader = struct {
+    pub const Kind = enum { vert, frag, comp, geom };
+    //______________________________________
+    // @section Shader: Graphics
+    //____________________________
+    pub const Graphics = struct {
+      vert  :zvk.shader.Module,
+      frag  :zvk.shader.Module,
+
+      pub fn create_spv (
+          D    : zvk.Device,
+          vert : zvk.SpirV,
+          frag : zvk.SpirV,
+          A    : zvk.Allocator,
+        ) !zvk.shader.Graphics {
+        return zvk.shader.Graphics{
+          .vert = try zvk.shader.Module.create_spv(D, zvk.shader.Kind.vert, vert, A),
+          .frag = try zvk.shader.Module.create_spv(D, zvk.shader.Kind.frag, frag, A),
+          };
+      } //:: zvk.shader.Graphics.create
+
+      pub fn destroy (
+          S : *zvk.shader.Graphics,
+          D : zvk.Device,
+        ) void {
+        S.vert.destroy(D);
+        S.frag.destroy(D);
+      } //:: zvk.shader.Graphics.destroy
+    }; //:: zvk.shader.Graphics.destroy
+
+
+    //______________________________________
+    // @section Shader: Stage
+    //____________________________
+    pub const Stage = struct {
+      flags  :vk.shader.stage.Flags,
+      cfg    :vk.shader.stage.Cfg,
+      spec   :vk.pipeline.specialization.Cfg, // https://registry.khronos.org/vulkan/specs/1.3-extensions/html/vkspec.html#pipelines-specialization-constants
+
+      pub const CreateOptions = struct {
+        name  : vk.String             = zvk.cfg.shader.EntryPoint,
+        flags : vk.shader.stage.Flags = .{}
+      }; //:: zvk.shader.Stage.CreateOptions
+
+      pub fn create (
+          shd : vk.shader.T,
+          in  : zvk.shader.Stage.CreateOptions,
+        ) !zvk.shader.Stage {
+        var result :zvk.shader.Stage= undefined;
+        result.flags = in.flags;
+        result.spec  = vk.pipeline.specialization.Cfg{ // TODO:
+          .mapEntryCount       = 0,     // u32 = @import("std").mem.zeroes(u32),
+          .pMapEntries         = null,  // [*c]const VkSpecializationMapEntry = @import("std").mem.zeroes([*c]const VkSpecializationMapEntry),
+          .dataSize            = 0,     // usize = @import("std").mem.zeroes(usize),
+          .pData               = null,  // ?*const anyopaque = @import("std").mem.zeroes(?*const anyopaque),
+          }; //:: result.spec
+        result.cfg = vk.shader.stage.Cfg{
+          .sType               = vk.stype.shader.stage.Cfg,                  // VkStructureType = @import("std").mem.zeroes(VkStructureType),
+          .pNext               = null,                                       // ?*const anyopaque = @import("std").mem.zeroes(?*const anyopaque),
+          .flags               = vk.pipeline.shader.stage.Flags.toInt(.{}),  // VkPipelineShaderStageCreateFlags = @import("std").mem.zeroes(VkPipelineShaderStageCreateFlags),
+          .stage               = result.flags.toInt(),                       // VkShaderStageFlagBits = @import("std").mem.zeroes(VkShaderStageFlagBits),
+          .module              = shd,                                        // VkShaderModule = @import("std").mem.zeroes(VkShaderModule),
+          .pName               = in.name,                                    // [*c]const u8 = @import("std").mem.zeroes([*c]const u8),
+          .pSpecializationInfo = &result.spec,                               // [*c]const VkSpecializationInfo = @import("std").mem.zeroes([*c]const VkSpecializationInfo),
+          }; //:: result.cfg
+        return result;
+      } //:: zvk.shader.Stage.create
+    }; //:: zvk.shader.Stage
+
+
+    //______________________________________
+    // @section Shader Module
+    //____________________________
+    pub const Module = struct {
+      A      :zvk.Allocator,
+      ct     :vk.shader.T,
+      cfg    :vk.shader.Cfg,
+      code   :zvk.SpirV,
+      stage  :zvk.shader.Stage,
+      kind   :zvk.shader.Kind,
+
+      pub fn create_spv (
+          D   : zvk.Device,
+          K   : zvk.shader.Kind,
+          spv : zvk.SpirV,
+          A   : zvk.Allocator,
+        ) !zvk.shader.Module {
+        var result :zvk.shader.Module= undefined;
+        result.A    = A;
+        result.code = spv;
+        result.kind = K;
+        result.cfg  = vk.shader.Cfg{
+          .sType    = vk.stype.shader.Cfg,
+          .pNext    = null,
+          .flags    = vk.flags.Shader.toInt(.{}),
+          .codeSize = result.code.len*@sizeOf(u32),
+          .pCode    = @ptrCast(result.code.ptr),
+          }; //:: result.cfg
+        try vk.ok(vk.shader.create(D.logical.ct, &result.cfg, result.A.vk, &result.ct));
+        result.stage = try zvk.shader.Stage.create(result.ct, .{
+          .name  = zvk.cfg.shader.EntryPoint,
+          .flags = switch (result.kind) {
+            .comp => vk.shader.stage.Flags{.compute  = true},
+            .geom => vk.shader.stage.Flags{.geometry = true},
+            .vert => vk.shader.stage.Flags{.vertex   = true},
+            .frag => vk.shader.stage.Flags{.fragment = true},
+            }, //:: result.stage.flags
+          }); //:: result.stage
+        return result;
+      } //:: zvk.shader.Module.create
+
+      pub fn destroy (
+          M : *zvk.shader.Module,
+          D : zvk.Device,
+        ) void {
+        vk.shader.destroy(D.logical.ct, M.ct, M.A.vk);
+      } //:: zvk.shader.Module.create
+    }; //:: zvk.shader.Module
+  }; //:: zvk.shader
+
+
+  //______________________________________
+  // @section Pipelines
+  //____________________________
+  pub const Framebuffer = zvk.framebuffer.T;
+  pub const framebuffer = struct {
+    pub const Subpass = struct {
+      ref    :vk.render.subpass.Reference,
+      descr  :vk.render.subpass.Description,
+    }; //:: zvk.framebuffer.Subpass
+
+    pub const Pass = struct {
+      A      :zvk.Allocator,
+      ct     :vk.render.pass.T,
+      cfg    :vk.render.pass.Cfg,
+      color  :vk.render.pass.Description,
+      sub    :zvk.framebuffer.Subpass,
+
+      pub fn create (
+          D        : zvk.Device,
+          C        : struct {
+            format : zvk.color.Format}
+        ) !zvk.framebuffer.Pass {
+        var result :zvk.framebuffer.Pass= undefined;
+        result.color               = vk.render.pass.Description{
+          .flags                   = vk.render.pass.description.Flags.toInt(.{}),
+          .format                  = C.format, // VkFormat = @import("std").mem.zeroes(VkFormat),
+          .samples                 = vk.render.pass.attachment.Samples.toInt(.{
+            .c01                   = true
+            }), //:: result.color.samples
+          .loadOp                  = @intFromEnum(vk.render.pass.attachment.LoadOp.clear),
+          .storeOp                 = @intFromEnum(vk.render.pass.attachment.StoreOp.store),
+          .stencilLoadOp           = @intFromEnum(vk.render.pass.attachment.LoadOp.dontCare),
+          .stencilStoreOp          = @intFromEnum(vk.render.pass.attachment.StoreOp.dontCare),
+          .initialLayout           = @intFromEnum(vk.image.Layout.undefined),
+          .finalLayout             = @intFromEnum(vk.image.Layout.present_src),
+          }; //:: result.color
+        result.sub                 = undefined;
+        result.sub.ref             = vk.render.subpass.Reference{
+          .attachment              = 0,
+          .layout                  = @intFromEnum(vk.image.Layout.color_attachment_optimal),
+          }; //:: result.sub.descr
+        result.sub.descr           = vk.render.subpass.Description{
+          .flags                   = vk.render.subpass.description.Flags.toInt(.{}),
+          .pipelineBindPoint       = @intFromEnum(vk.pipeline.BindPoint.graphics),
+          .inputAttachmentCount    = 0,
+          .pInputAttachments       = null,
+          .colorAttachmentCount    = 1,
+          .pColorAttachments       = &result.sub.ref,
+          .pResolveAttachments     = 0,
+          .pDepthStencilAttachment = null, // [*c]const VkAttachmentReference = @import("std").mem.zeroes([*c]const VkAttachmentReference),
+          .preserveAttachmentCount = 0,
+          .pPreserveAttachments    = null, // [*c]const u32 = @import("std").mem.zeroes([*c]const u32),
+          }; //:: result.sub
+        result.cfg                 = vk.render.pass.Cfg{
+          .sType                   = vk.stype.render.pass.Cfg,
+          .pNext                   = null,
+          .flags                   = vk.render.pass.Flags.toInt(.{}),
+          .attachmentCount         = 1,
+          .pAttachments            = &result.color,
+          .subpassCount            = 1,
+          .pSubpasses              = &result.sub.descr,
+          .dependencyCount         = 0,
+          .pDependencies           = null,
+          }; //:: result.cfg
+        try vk.ok(vk.render.pass.create(D.logical.ct, &result.cfg, result.A.vk, &result.ct));
+        return result;
+      } //:: zvk.framebuffer.Pass.create
+
+      pub fn destroy (
+          P : *zvk.framebuffer.Pass,
+          D : zvk.Device,
+        ) void {
+        vk.render.pass.destroy(D.logical.ct, P.ct, P.A.vk);
+      } //:: zvk.framebuffer.Pass.create
+    }; //:: zvk.framebuffer.Pass
+
+    pub const T = struct {
+      ct   :vk.framebuffer.T,
+      cfg  :vk.framebuffer.Cfg,
+    }; //:: zvk.framebuffer.T
+  }; //:: zvk.framebuffer
+
+
+  //______________________________________
+  // @section Pipelines
+  //____________________________
+  pub const Pipeline = zvk.pipeline.Graphics;
+  pub const pipeline = struct {
+    //______________________________________
+    // @section Pipeline: Graphics
+    //____________________________
+    pub const Graphics = struct {
+      A         :zvk.Allocator,
+      shader    :zvk.Shader,
+      dynamic   :zvk.pipeline.Graphics.State,
+      viewport  :zvk.pipeline.Graphics.Viewport,
+      vertex    :zvk.pipeline.Graphics.Vertex,
+      raster    :vk.pipeline.graphics.raster.Cfg,
+      msaa      :vk.pipeline.graphics.raster.msaa.Cfg,
+      blend     :zvk.pipeline.Graphics.Blend,
+      shape     :zvk.pipeline.Graphics.Shape,
+      pass      :zvk.framebuffer.Pass,
+      ct        :vk.pipeline.graphics.T,
+      cfg       :vk.pipeline.graphics.Cfg,
+
+      pub const Shape = struct {
+        A    :zvk.Allocator,
+        ct   :vk.pipeline.graphics.shape.T,
+        cfg  :vk.pipeline.graphics.shape.Cfg,
+        pub fn create (
+          D : zvk.Device,
+          A : zvk.Allocator,
+          ) !zvk.pipeline.Graphics.Shape {
+          var result :zvk.pipeline.Graphics.Shape= undefined;
+          result.A                  = A;
+          result.cfg                = vk.pipeline.graphics.shape.Cfg{
+            .sType                  = vk.stype.pipeline.graphics.shape.Cfg,
+            .pNext                  = null,
+            .flags                  = vk.pipeline.graphics.shape.Flags.toInt(.{}),
+            .setLayoutCount         = 0,
+            .pSetLayouts            = null, // [*c]const VkDescriptorSetLayout = @import("std").mem.zeroes([*c]const VkDescriptorSetLayout),
+            .pushConstantRangeCount = 0,
+            .pPushConstantRanges    = null, // [*c]const VkPushConstantRange = @import("std").mem.zeroes([*c]const VkPushConstantRange),
+            }; //:: result.cfg
+          try vk.ok(vk.pipeline.graphics.shape.create(D.logical.ct, &result.cfg, result.A.vk, &result.ct));
+          return result;
+        } //:: zvk.pipeline.Graphics.Shape.create
+
+        pub fn destroy (
+            S : *zvk.pipeline.Graphics.Shape,
+            D : zvk.Device,
+          ) void {
+          vk.pipeline.graphics.shape.destroy(D.logical.ct, S.ct, S.A.vk);
+        } //:: zvk.pipeline.Graphics.Shape.destroy
+      }; //:: zvk.pipeline.Graphics.Shape
+
+      pub const Vertex = struct {
+        input  :vk.pipeline.graphics.vertex.input.Cfg,
+        assem  :vk.pipeline.graphics.vertex.assembly.Cfg,
+      }; //:: zvk.pipeline.Graphics.Vertex
+
+      pub const State = struct {
+        list  :[]const vk.pipeline.state.dynamic.Kind,
+        cfg   :vk.pipeline.state.dynamic.Cfg,
+      }; //:: zvk.pipeline.Graphics.State
+
+      pub const Viewport = struct {
+        ct       :vk.pipeline.graphics.viewport.T,
+        cfg      :vk.pipeline.graphics.viewport.Cfg,
+        scissor  :vk.pipeline.graphics.viewport.Scissor,
+      }; //:: zvk.pipeline.Graphics.Viewport
+
+      pub const Blend = struct {
+        ct   :vk.pipeline.graphics.raster.blend.T,
+        cfg  :vk.pipeline.graphics.raster.blend.Cfg,
+      }; //:: zvk.pipeline.Graphics.Blend
+
+      pub const CreateOptions = struct {
+        depth_reversed  : bool = zvk.cfg.render.depth.reversed,
+      }; //:: zvk.pipeline.Graphics.CreateOptions
+
+      pub fn create_spv (
+          D   : zvk.Device,
+          S   : zvk.Swapchain,
+          shd : struct { vert :zvk.SpirV, frag :zvk.SpirV },
+          in  : zvk.pipeline.Graphics.CreateOptions,
+          A   : zvk.Allocator,
+        ) !zvk.pipeline.Graphics {
+        var result :zvk.pipeline.Graphics= undefined;
+        result.A                             = A;
+        result.shader                        = try zvk.Shader.create_spv(D, shd.vert, shd.frag, A);
+        result.dynamic                       = undefined;
+        result.dynamic.list                  = &.{vk.pipeline.state.Dynamic.viewport, vk.pipeline.state.Dynamic.scissor};
+        result.dynamic.cfg                   = vk.pipeline.state.dynamic.Cfg{
+          .sType                             = vk.stype.pipeline.graphics.state.dynamic.Cfg,
+          .pNext                             = null,
+          .flags                             = vk.pipeline.state.dynamic.Flags.toInt(.{}),
+          .dynamicStateCount                 = @intCast(result.dynamic.list.len),
+          .pDynamicStates                    = @ptrCast(result.dynamic.list.ptr),
+          }; //:: result.dynamic.cfg
+        result.viewport                      = undefined;
+        result.viewport.ct                   = vk.pipeline.graphics.viewport.T{
+          .x                                 = 0.0,
+          .y                                 = 0.0,
+          .width                             = @floatFromInt(S.size.width),
+          .height                            = @floatFromInt(S.size.height),
+          .minDepth                          = if (in.depth_reversed) 1.0 else 0.0,
+          .maxDepth                          = if (in.depth_reversed) 0.0 else 1.0,
+          }; //:: result.viewport.ct
+        result.viewport.scissor              = vk.pipeline.graphics.viewport.Scissor{
+          .offset                            = .{.x= 0, .y= 0},
+          .extent                            = S.size,
+          }; //:: result.viewport.scissor
+        result.viewport.cfg                  = vk.pipeline.graphics.viewport.Cfg{
+          .sType                             = vk.stype.pipeline.graphics.viewport.Cfg,
+          .pNext                             = null,
+          .flags                             = vk.pipeline.graphics.viewport.Flags.toInt(.{}),
+          .viewportCount                     = 1,
+          .pViewports                        = &result.viewport.ct,
+          .scissorCount                      = 1,
+          .pScissors                         = &result.viewport.scissor,
+          }; //:: result.viewport.ct
+        result.vertex                        = zvk.pipeline.Graphics.Vertex{
+          .input                             = vk.pipeline.graphics.vertex.input.Cfg{
+            .sType                           = vk.stype.pipeline.graphics.vertex.input.Cfg,
+            .pNext                           = null,
+            .flags                           = vk.pipeline.graphics.vertex.input.Flags.toInt(.{}),
+            .vertexBindingDescriptionCount   = 0,    // TODO:  u32 = @import("std").mem.zeroes(u32),
+            .pVertexBindingDescriptions      = null, // TODO:  [*c]const VkVertexInputBindingDescription = @import("std").mem.zeroes([*c]const VkVertexInputBindingDescription),
+            .vertexAttributeDescriptionCount = 0,    // TODO:  u32 = @import("std").mem.zeroes(u32),
+            .pVertexAttributeDescriptions    = null, // TODO:  [*c]const VkVertexInputAttributeDescription = @import("std").mem.zeroes([*c]const VkVertexInputAttributeDescription),
+            }, //:: result.vertex.input
+          .assem                             = vk.pipeline.graphics.vertex.assembly.Cfg{
+            .sType                           = vk.stype.pipeline.graphics.vertex.assembly.Cfg,
+            .pNext                           = null,
+            .flags                           = vk.pipeline.graphics.vertex.assembly.Flags.toInt(.{}),
+            .topology                        = @intFromEnum(vk.pipeline.graphics.vertex.topology.Kind.triangle_list), //:: TODO:  triangle_strip
+            .primitiveRestartEnable          = vk.toBool(false),
+            }, //:: result.vertex.input
+          }; //:: result.vertex
+        result.raster                        = vk.pipeline.graphics.raster.Cfg{
+          .sType                             = vk.stype.pipeline.graphics.raster.Cfg,
+          .pNext                             = null,
+          .flags                             = vk.pipeline.graphics.raster.Flags.toInt(.{}),
+          .depthClampEnable                  = vk.toBool(false),
+          .rasterizerDiscardEnable           = vk.toBool(false),
+          .polygonMode                       = @intFromEnum(vk.pipeline.graphics.raster.Polygon.fill),
+          .cullMode                          = vk.pipeline.graphics.raster.Cull.toInt(.{
+            .back                            = false, //:: TODO: Enable
+            .front                           = false,
+             }), //:: result.raster.cullMode
+          .frontFace                         = @intFromEnum(vk.pipeline.graphics.raster.Face.cw),
+          .depthBiasEnable                   = vk.toBool(false),
+          .depthBiasConstantFactor           = 0.0,
+          .depthBiasClamp                    = 0.0,
+          .depthBiasSlopeFactor              = 0.0,
+          .lineWidth                         = 1.0,
+          }; //:: result.raster
+        result.msaa                          = vk.pipeline.graphics.raster.msaa.Cfg{
+          .sType                             = vk.stype.pipeline.graphics.raster.msaa.Cfg,
+          .pNext                             = null,
+          .flags                             = vk.pipeline.graphics.raster.msaa.Flags.toInt(.{}),
+          .rasterizationSamples              = vk.pipeline.graphics.raster.msaa.Samples.toInt(.{
+            .c01                             = true,
+            }), //:: result.msaa.rasterizationSamples
+          .sampleShadingEnable               = vk.toBool(false),
+          .minSampleShading                  = 1.0,
+          .pSampleMask                       = null, // [*c]const VkSampleMask = @import("std").mem.zeroes([*c]const VkSampleMask),
+          .alphaToCoverageEnable             = vk.toBool(false), // VkBool32 = @import("std").mem.zeroes(VkBool32),
+          .alphaToOneEnable                  = vk.toBool(false), // VkBool32 = @import("std").mem.zeroes(VkBool32),
+          }; //:: result.msaa
+        result.blend                         = undefined;
+        result.blend.ct                      = vk.pipeline.graphics.raster.blend.T{
+          .blendEnable                       = vk.toBool(true),
+          .srcColorBlendFactor               = @intFromEnum(vk.pipeline.graphics.raster.blend.Factor.srcAlpha),
+          .dstColorBlendFactor               = @intFromEnum(vk.pipeline.graphics.raster.blend.Factor.oneMinus_srcAlpha),
+          .colorBlendOp                      = @intFromEnum(vk.pipeline.graphics.raster.blend.Op.add),
+          .srcAlphaBlendFactor               = @intFromEnum(vk.pipeline.graphics.raster.blend.Factor.one),
+          .dstAlphaBlendFactor               = @intFromEnum(vk.pipeline.graphics.raster.blend.Factor.zero),
+          .alphaBlendOp                      = @intFromEnum(vk.pipeline.graphics.raster.blend.Op.add),
+          .colorWriteMask                    = vk.color.component.Flags.rgba.toInt(),
+          }; //:: result.blend.ct
+        result.blend.cfg                     = vk.pipeline.graphics.raster.blend.Cfg{
+          .sType                             = vk.stype.pipeline.graphics.raster.blend.Cfg,
+          .pNext                             = null,
+          .flags                             = vk.pipeline.graphics.raster.blend.Flags.toInt(.{}),
+          .logicOpEnable                     = vk.toBool(false),
+          .logicOp                           = @intFromEnum(vk.pipeline.graphics.raster.LogicOp.copy),
+          .attachmentCount                   = 1,
+          .pAttachments                      = &result.blend.ct,
+          .blendConstants                    = .{0.0, 0.0, 0.0, 0.0}, // [4]f32
+          }; //:: result.blend.cfg
+        result.shape                         = try zvk.pipeline.Graphics.Shape.create(D, result.A);
+        result.pass                          = try zvk.framebuffer.Pass.create(D, .{.format= S.format.format});
+        result.cfg                           = vk.pipeline.graphics.Cfg{
+          .sType                             = vk.stype.pipeline.graphics.Cfg,
+          .pNext                             = null,
+          .flags                             = vk.pipeline.Flags.toInt(.{}),
+          .stageCount                        = 2,
+          .pStages                           = @as(*const [2]vk.shader.stage.Cfg, &.{result.shader.vert.stage.cfg, result.shader.frag.stage.cfg}),
+          .pVertexInputState                 = &result.vertex.input,
+          .pInputAssemblyState               = &result.vertex.assem,
+          .pTessellationState                = null, // [*c]const VkPipelineTessellationStateCreateInfo = @import("std").mem.zeroes([*c]const VkPipelineTessellationStateCreateInfo),
+          .pViewportState                    = &result.viewport.cfg,
+          .pRasterizationState               = &result.raster,
+          .pMultisampleState                 = &result.msaa,
+          .pDepthStencilState                = null, // TODO:    // [*c]const VkPipelineDepthStencilStateCreateInfo = @import("std").mem.zeroes([*c]const VkPipelineDepthStencilStateCreateInfo),
+          .pColorBlendState                  = &result.blend.cfg,
+          .pDynamicState                     = &result.dynamic.cfg,
+          .layout                            = result.shape.ct,
+          .renderPass                        = result.pass.ct,
+          .subpass                           = 0,
+          .basePipelineHandle                = @ptrCast(vk.Null), // VkPipeline = @import("std").mem.zeroes(VkPipeline),
+          .basePipelineIndex                 = -1,
+          }; //:: result.cfg
+        try vk.ok(vk.pipeline.graphics.create(D.logical.ct, @ptrCast(vk.Null), 1, &result.cfg, result.A.vk, &result.ct));
+        return result;
+      } //:: zvk.pipeline.Graphics.create_spv
+
+      pub fn destroy (
+          P : *zvk.pipeline.Graphics,
+          D : zvk.Device,
+        ) void {
+        P.shader.destroy(D);
+        P.shape.destroy(D);
+        vk.pipeline.graphics.destroy(D.logical.ct, P.ct, P.A.vk);
+      } //:: zvk.pipeline.Graphics.destroy
+    }; //:: zvk.pipeline.Graphics
+
+
+    //______________________________________
+    // @section Pipeline: Compute
+    //____________________________
+    pub const Compute = struct {
+      A       :zvk.Allocator,
+      shader  :zvk.Shader,
+      // TODO: ...
+    }; //:: zvk.pipeline.Compute
+  };
+
+
+  //______________________________________
+  // @section Synchronization
+  //____________________________
   pub const sync = struct {
+    //______________________________________
+    // @section Synchronization: Fence
+    //____________________________
     pub const Fence = struct {
       A    :zvk.Allocator,
       ct   :vk.sync.Fence,
@@ -1463,6 +1939,10 @@ pub const zvk = struct {
       } //:: zvk.sync.Fence.destroy
     }; //:: zvk.sync.Fence
 
+
+    //______________________________________
+    // @section Synchronization: Semaphore
+    //____________________________
     pub const Semaphore = struct {
       A    :zvk.Allocator,
       ct   :vk.sync.Semaphore,
@@ -1485,69 +1965,198 @@ pub const zvk = struct {
       } //:: zvk.sync.Semaphore.destroy
     }; //:: zvk.sync.Semaphore
   }; //:: zvk.sync
+
+
+  //______________________________________
+  // @section Commands
+  //____________________________
+  pub const CommandBatch = zvk.command.Batch;
+  pub const command = struct {
+    //______________________________________
+    // @section Command: Pool
+    //____________________________
+    pub const Pool = struct {
+      A    :zvk.Allocator,
+      ct   :vk.command.Pool,
+      cfg  :vk.command.pool.Cfg,
+
+      pub const CreateOptions = struct {
+        transient : bool  = zvk.cfg.command.transient,
+        reset     : bool  = zvk.cfg.command.reset,
+        protected : bool  = zvk.cfg.command.protected,
+        }; //:: zvk.command.Batch.CreateOptions
+
+      pub fn create (
+          D  : zvk.Device,
+          Q  : u32,
+          in : zvk.command.Pool.CreateOptions,
+          A  : zvk.Allocator,
+        ) !zvk.command.Pool {
+        var result = zvk.command.Pool{
+          .A   = A,
+          .ct  = undefined,
+          .cfg = vk.command.pool.Cfg{
+            .sType            = vk.stype.command.pool.Cfg,      // VkStructureType = @import("std").mem.zeroes(VkStructureType),
+            .pNext            = null,                           // ?*const anyopaque = @import("std").mem.zeroes(?*const anyopaque),
+            .flags            = vk.flags.command.Pool.toInt(.{  // VkCommandPoolCreateFlags = @import("std").mem.zeroes(VkCommandPoolCreateFlags),
+              .transient      = in.transient,
+              .reset          = in.reset,
+              .protected      = in.protected,
+              }), //:: result.cfg.flags
+            .queueFamilyIndex = Q,                              // u32 = @import("std").mem.zeroes(u32),
+            } //:: result.cfg
+          }; //:: result
+        try vk.ok(vk.command.pool.create(D.logical, &result.cfg, result.A.vk, &result.ct));
+        return result;
+      } //:: zvk.command.Pool.create
+
+      pub fn destroy (
+          P : *zvk.command.Pool,
+          D : zvk.Device,
+        ) void {
+        vk.command.pool.destroy(D.logical, P.ct, P.A.vk);
+      } //:: zvk.command.Pool.destroy
+    }; //:: zvk.command.Pool
+
+
+    //______________________________________
+    // @section Command: Buffer
+    //____________________________
+    pub const Buffer = struct {
+      A    :zvk.Allocator,
+      ct   :[]vk.command.Buffer,
+      cfg  :vk.command.buffer.Cfg,
+
+      pub const CreateOptions = struct {
+        primary : bool  = zvk.cfg.command.primary,
+        count   : usize = 1,
+        }; //:: zvk.command.Buffer.CreateOptions
+
+      pub fn create (
+          D  : zvk.Device,
+          P  : zvk.command.Pool,
+          in : zvk.command.Buffer.CreateOptions,
+          A  : zvk.Allocator,
+        ) !zvk.command.Buffer {
+        var result = zvk.command.Buffer{
+          .A                    = A,
+          .cfg                  = vk.command.buffer.Cfg{
+            .sType              = vk.stype.command.buffer.Cfg,      // VkStructureType = @import("std").mem.zeroes(VkStructureType),
+            .pNext              = null,                             // ?*const anyopaque = @import("std").mem.zeroes(?*const anyopaque),
+            .commandPool        = P.ct,                             // VkCommandPool = @import("std").mem.zeroes(VkCommandPool),
+            .level              =                                   // VkCommandBufferLevel = @import("std").mem.zeroes(VkCommandBufferLevel),
+              if (in.primary)   vk.command.buffer.level.Primary
+              else              vk.command.buffer.level.Secondary,
+            .commandBufferCount = @intCast(in.count),               // u32 = @import("std").mem.zeroes(u32),
+            }, //:: result.cfg
+          }; //:: result
+        result.ct = try result.A.zig.alloc(vk.command.Buffer, in.count);
+        try vk.ok(vk.command.buffer.create(D.logical, &result.cfg, result.ct.ptr));
+        return result;
+      } //:: zvk.command.Buffer.create
+
+      pub fn destroy (
+          B : *zvk.command.Buffer,
+        ) void {
+        // vk.command.buffer.destroy(D.logical, C.pool, C.buffer.len, C.buffer.ptr);  // Freed by destroying the pool
+        B.A.zig.free(B.ct);
+      } //:: zvk.command.Buffer.destroy
+    }; //:: zvk.command.Buffer
+
+
+    //______________________________________
+    // @section Command: Batch
+    //____________________________
+    pub const Batch = struct {
+      A       :zvk.Allocator,
+      pool    :zvk.command.Pool,
+      buffer  :zvk.command.Buffer,
+
+      pub const CreateOptions = struct {
+        transient : bool  = zvk.cfg.command.transient,
+        reset     : bool  = zvk.cfg.command.reset,
+        protected : bool  = zvk.cfg.command.protected,
+        primary   : bool  = zvk.cfg.command.primary,
+        buffers   : usize = 1,
+        }; //:: zvk.command.Batch.CreateOptions
+
+      pub fn create (
+          D  : zvk.Device,
+          in : zvk.command.Batch.CreateOptions,
+          A  : zvk.Allocator,
+        ) !zvk.command.Batch {
+        // FIX: Non-Graphics Commands
+        if (D.queue.graphics == null) return error.command_InvalidGraphicsQueue;
+        var result = zvk.command.Batch{
+          .A           = A,
+          .buffer      = undefined,
+          .pool        = try zvk.command.Pool.create(D, D.queue.graphics.?.id, .{
+            .reset     = in.reset,
+            .transient = in.transient,
+            .protected = in.protected
+            }, A), //:: result.pool
+           }; //:: result
+        // Create the Command Buffers
+        result.buffer = try zvk.command.Buffer.create(D, result.pool.ct, .{
+          .count   = in.buffers,
+          .primary = in.primary,
+          }, result.A);
+        return result;
+      } //:: zvk.command.Batch.create
+
+      pub fn destroy (
+          C : *zvk.command.Batch,
+          D : zvk.Device,
+        ) void {
+        C.pool.destroy(D);
+        C.buffer.destroy();
+      } //:: zvk.command.Batch.destroy
+    }; //:: zvk.command.Batch
+  }; //:: zvk.command
+
+
+  //______________________________________
+  // @section Actions
+  //____________________________
+  pub const action = struct {
+    pub const attachments = struct {
+      pub const ClearOptions = struct {
+        id         : u32 = 0,
+        color      : zvk.color.rgba.F32 = .{.r=0.0, .g=0.0, .b=0.0, .a=0.0},
+        depth      : f32 = 0.0,
+        stencil    : u32 = 0,
+        flags      : vk.flags.image.Aspect = vk.flags.image.Aspect.toInt(.{
+          .color   = true,
+          .depth   = false,
+          .stencil = false,
+          }), //:: zvk.action.attachments.ClearOptions.flags
+        startPos   : struct { x :i32= 0, y :i32= 0 },
+        size       : struct { w :u32= 0, h :u32= 0 },
+      }; //:: zvk.action.attachments.ClearOptions
+      pub fn clear (
+           B  : vk.command.Buffer,
+           in : zvk.action.attachments.ClearOptions,
+        ) void {
+        vk.action.attachments.clear(B, // vkCmdClearAttachments( commandBuffer: VkCommandBuffer,
+          1, &vk.clear.Attachment{  //   attachmentCount: u32,  pAttachments: [*c]const VkClearAttachment,
+            .aspectMask      = in.flags,
+            .colorAttachment = in.id,
+            .clearValue      = .{
+              .color         = .{.float32= [4].{in.color.r, in.color.g, in.color.b, in.color.a}},
+              .depthStencil  = .{.depth = in.depth, .stencil= in.stencil },},
+            }, //:: pRects
+          1, &vk.clear.Rect{  //   rectCount: u32, pRects: [*c]const VkClearRect
+            .rect            = .{
+              .offset        = .{.x     = in.startPos.x, .y      = in.startPos.y},
+              .extent        = .{.width = in.size.w,     .height = in.size.h    },
+            }, //:: pAttachments
+            .baseArrayLayer  = 0,
+            .layerCount      = 1,},
+          );
+      } //:: zvk.action.attachments.clear
+    }; //:: zvk.action.attachments
+  }; //:: zvk.action
 }; //:: zvk
-
-// pub const zvk2 = struct {
-//   pub const CommandBatch = zvk.command.Batch;
-//   pub const command = struct {
-//     pub const Batch = struct {
-//       A       :zvk.Allocator,
-//       pool    :vk.command.Pool,
-//       buffer  :[]vk.command.Buffer,
-//
-//       pub const CreateOptions = struct {
-//         transient : bool  = zvk.cfg.command.transient,
-//         reset     : bool  = zvk.cfg.command.reset,
-//         protected : bool  = zvk.cfg.command.protected,
-//         primary   : bool  = zvk.cfg.command.primary,
-//         buffers   : usize = 1,
-//         }; //:: zvk.command.Batch.CreateOptions
-//
-//       pub fn create (
-//           D  : zvk.Device,
-//           in : zvk.command.Batch.CreateOptions,
-//           A  : zvk.Allocator,
-//         ) !zvk.command.Batch {
-//         // FIX: Non-Graphics Commands
-//         if (D.queue.graphics == null) return error.command_InvalidGraphicsQueue;
-//         var result = zvk.command.Batch{.A= A, .pool=undefined, .buffer=undefined};
-//         // Create the Command Pool
-//         try vk.ok(vk.command.pool.create(D.logical, &vk.command.pool.Cfg{
-//           .sType            = vk.stype.command.pool.Cfg,      // VkStructureType = @import("std").mem.zeroes(VkStructureType),
-//           .pNext            = null,                           // ?*const anyopaque = @import("std").mem.zeroes(?*const anyopaque),
-//           .flags            = vk.flags.command.Pool.toInt(.{  // VkCommandPoolCreateFlags = @import("std").mem.zeroes(VkCommandPoolCreateFlags),
-//             .transient      = in.transient,
-//             .reset          = in.reset,
-//             .protected      = in.protected,
-//             }),
-//           .queueFamilyIndex = D.queue.graphics.?.id,          // u32 = @import("std").mem.zeroes(u32),
-//           }, result.A.vk, &result.pool));
-//         // Create the Command Buffer
-//         result.buffer = try result.A.zig.alloc(vk.command.Buffer, in.buffers);
-//         try vk.ok(vk.command.buffer.create(D.logical, &vk.command.buffer.Cfg{
-//           .sType              = vk.stype.command.buffer.Cfg,      // VkStructureType = @import("std").mem.zeroes(VkStructureType),
-//           .pNext              = null,                             // ?*const anyopaque = @import("std").mem.zeroes(?*const anyopaque),
-//           .commandPool        = result.pool,                      // VkCommandPool = @import("std").mem.zeroes(VkCommandPool),
-//           .level              =                                   // VkCommandBufferLevel = @import("std").mem.zeroes(VkCommandBufferLevel),
-//             if (in.primary)   vk.command.buffer.level.Primary
-//             else              vk.command.buffer.level.Secondary,
-//           .commandBufferCount = @intCast(result.buffer.len),      // u32 = @import("std").mem.zeroes(u32),
-//           }, result.buffer.ptr));
-//         return result;
-//       } //:: zvk.command.Batch.create
-//
-//       pub fn destroy (
-//           C : *zvk.command.Batch,
-//           D : zvk.Device,
-//         ) void {
-//         // vk.command.buffer.destroy(D.logical, C.pool, C.buffer.len, C.buffer.ptr);  // Freed by destroying the pool
-//         vk.command.pool.destroy(D.logical, C.pool, C.A.vk);
-//         C.A.zig.free(C.buffer);
-//       } //:: zvk.command.Batch.destroy
-//     }; //:: zvk.command.Batch
-//   }; //:: zvk.command
-// }; //:: zvk
-
 
 //:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 //:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::

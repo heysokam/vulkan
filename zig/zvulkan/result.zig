@@ -3,13 +3,66 @@
 //:______________________________________________________________________
 //! @fileoverview Vulkan Result Management
 //_________________________________________|
-pub const result = @This();
 // @deps vulkan
 const c = @import("../lib/vulkan.zig");
 const String = @import("./types.zig").String;
 
-const T = c.VkResult;
 pub const Result = result.T;
+pub const result = struct {
+  const T = c.VkResult;
+  pub const Code = enum(i32) {
+    ok                                            = 0,
+    notReady                                      = 1,
+    timeout                                       = 2,
+    eventSet                                      = 3,
+    eventReset                                    = 4,
+    incomplete                                    = 5,
+    errorOutOfHostMemory                          = -1,
+    errorOutOfDeviceMemory                        = -2,
+    errorInitializationFailed                     = -3,
+    errorDeviceLost                               = -4,
+    errorMemoryMapFailed                          = -5,
+    errorLayerNotPresent                          = -6,
+    errorExtensionNotPresent                      = -7,
+    errorFeatureNotPresent                        = -8,
+    errorIncompatibleDriver                       = -9,
+    errorTooManyObjects                           = -10,
+    errorFormatNotSupported                       = -11,
+    errorFragmentedPool                           = -12,
+    errorUnknown                                  = -13,
+    errorOutOfPoolMemory                          = -1000069000,
+    errorInvalidExternalHandle                    = -1000072003,
+    errorFragmentation                            = -1000161000,
+    errorInvalidOpaqueCaptureAddress              = -1000257000,
+    pipelineCompileRequired                       = 1000297000,
+    errorSurfaceLost                              = -1000000000,
+    errorNativeWindowInUse                        = -1000000001,
+    suboptimal                                    = 1000001003,
+    errorOutOfDate                                = -1000001004,
+    errorIncompatibleDisplay                      = -1000003001,
+    errorValidationFailed                         = -1000011001,
+    errorInvalidShaderNV                          = -1000012000,
+    errorImageUsageNotSupported                   = -1000023000,
+    errorVideoPictureLayoutNotSupported           = -1000023001,
+    errorVideoProfileOperationNotSupported        = -1000023002,
+    errorVideoProfileFormatNotSupported           = -1000023003,
+    errorVideoProfileCodecNotSupported            = -1000023004,
+    errorVideoStdVersionNotSupported              = -1000023005,
+    errorInvalidDrmFormatModifierPlaneLayout      = -1000158000,
+    errorNotPermitted                             = -1000174001,
+    errorFullScreenExclusiveModeLost              = -1000255000,
+    threadIdle                                    = 1000268000,
+    threadDone                                    = 1000268001,
+    operationDeferred                             = 1000268002,
+    operationNotDeferred                          = 1000268003,
+    errorInvalidVideoStdParameters                = -1000299000,
+    errorCompressionExhausted                     = -1000338000,
+    incompatibleShaderBinary                      = 1000482000,
+    pipelineBinaryMissing                         = 1000483000,
+    errorNotEnoughSpace                           = -1000483000,
+    _,
+  }; //:: vk.result.Code
+}; //:: vk.result
 
 pub fn ok (R :result.T) !void {
   const code :result.Code= @enumFromInt(R);
@@ -64,58 +117,6 @@ pub fn ok (R :result.T) !void {
     result.Code.pipelineBinaryMissing                       => return error.PipelineBinaryMissing,
     result.Code.errorNotEnoughSpace                         => return error.ErrorNotEnoughSpace,
     else => return error.Unknown,
-  }
-}
+    }
+} //:: vk.ok
 
-pub const Code = enum(i32) {
-  ok                                            = 0,
-  notReady                                      = 1,
-  timeout                                       = 2,
-  eventSet                                      = 3,
-  eventReset                                    = 4,
-  incomplete                                    = 5,
-  errorOutOfHostMemory                          = -1,
-  errorOutOfDeviceMemory                        = -2,
-  errorInitializationFailed                     = -3,
-  errorDeviceLost                               = -4,
-  errorMemoryMapFailed                          = -5,
-  errorLayerNotPresent                          = -6,
-  errorExtensionNotPresent                      = -7,
-  errorFeatureNotPresent                        = -8,
-  errorIncompatibleDriver                       = -9,
-  errorTooManyObjects                           = -10,
-  errorFormatNotSupported                       = -11,
-  errorFragmentedPool                           = -12,
-  errorUnknown                                  = -13,
-  errorOutOfPoolMemory                          = -1000069000,
-  errorInvalidExternalHandle                    = -1000072003,
-  errorFragmentation                            = -1000161000,
-  errorInvalidOpaqueCaptureAddress              = -1000257000,
-  pipelineCompileRequired                       = 1000297000,
-  errorSurfaceLost                              = -1000000000,
-  errorNativeWindowInUse                        = -1000000001,
-  suboptimal                                    = 1000001003,
-  errorOutOfDate                                = -1000001004,
-  errorIncompatibleDisplay                      = -1000003001,
-  errorValidationFailed                         = -1000011001,
-  errorInvalidShaderNV                          = -1000012000,
-  errorImageUsageNotSupported                   = -1000023000,
-  errorVideoPictureLayoutNotSupported           = -1000023001,
-  errorVideoProfileOperationNotSupported        = -1000023002,
-  errorVideoProfileFormatNotSupported           = -1000023003,
-  errorVideoProfileCodecNotSupported            = -1000023004,
-  errorVideoStdVersionNotSupported              = -1000023005,
-  errorInvalidDrmFormatModifierPlaneLayout      = -1000158000,
-  errorNotPermitted                             = -1000174001,
-  errorFullScreenExclusiveModeLost              = -1000255000,
-  threadIdle                                    = 1000268000,
-  threadDone                                    = 1000268001,
-  operationDeferred                             = 1000268002,
-  operationNotDeferred                          = 1000268003,
-  errorInvalidVideoStdParameters                = -1000299000,
-  errorCompressionExhausted                     = -1000338000,
-  incompatibleShaderBinary                      = 1000482000,
-  pipelineBinaryMissing                         = 1000483000,
-  errorNotEnoughSpace                           = -1000483000,
-  _,
-};
