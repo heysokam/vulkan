@@ -121,6 +121,8 @@ namespace cdk {
 
 enum class Error { fail, warn };
 #define fn __PRETTY_FUNCTION__  // Function name
+#define HERE printf("HERE------------->    (file:%s  line:%d)\n", __FILE__, __LINE__);
+
 
 
 //______________________________________

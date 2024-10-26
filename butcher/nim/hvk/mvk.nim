@@ -130,8 +130,12 @@ type VkSemaphore                            *{.vulkan.}= object
 type VkFence                                *{.vulkan.}= object
 type VkPipelineShaderStageCreateInfo        *{.vulkan.}= object
 # Function types
-type PFN_vkDebugUtilsMessengerCallbackEXT *{.vulkan.}=
-  proc (severity :VkDebugUtilsMessageSeverityFlagBitsEXT; types :VkDebugUtilsMessageTypeFlagsEXT; cbdata :ptr VkDebugUtilsMessengerCallbackDataEXT; userdata :pointer) :VkBool32 {.cdecl.}
+type PFN_vkDebugUtilsMessengerCallbackEXT *{.vulkan.}= proc (
+    severity : VkDebugUtilsMessageSeverityFlagBitsEXT;
+    types    : VkDebugUtilsMessageTypeFlagsEXT;
+    cbdata   : ptr VkDebugUtilsMessengerCallbackDataEXT;
+    userdata : pointer
+  ) :VkBool32 {.cdecl.}
 
 
 #_________________________________________________
