@@ -10,13 +10,14 @@ const w    = @import("./window.zig");
 pub const Input = struct {
   _:void=undefined,
   pub fn update(I :*Input) void {_=I; glfw.sync(); }
-};
 
-pub fn init (win :*w.Window) Input {
-  // Input
-  _ = glfw.cb.setKey(win.ct, cb.key);
-  _ = glfw.cb.setMouseBtn(win.ct, null);
-  _ = glfw.cb.setMousePos(win.ct, null);
-  _ = glfw.cb.setMouseScroll(win.ct, null);
-  return Input{};
-}
+  pub fn init (win :*w.Window) Input {
+    // Input
+    _ = glfw.cb.setKey(win.ct, cb.key);
+    _ = glfw.cb.setMouseBtn(win.ct, null);
+    _ = glfw.cb.setMousePos(win.ct, null);
+    _ = glfw.cb.setMouseScroll(win.ct, null);
+    return Input{};
+  } //:: zsys.Input.init
+}; //:: zsys.Input
+

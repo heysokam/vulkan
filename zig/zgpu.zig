@@ -176,7 +176,7 @@ pub const zgpu = struct {
           D   : zvk.Device,
           cmd : zvk.command.Batch.CreateOptions,
           A   : zvk.Allocator,
-        ) !zgpu.render.Frame { 
+        ) !zgpu.render.Frame {
         return zgpu.render.Frame{
           .A           = A,
           .cmd         = try zvk.command.Batch.create(D, cmd, A),
