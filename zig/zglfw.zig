@@ -1,36 +1,53 @@
 //:____________________________________________________________________
 //  zglfw  |  Copyright (C) Ivan Mar (sOkam!)  |  GNU GPLv3 or later  :
 //:____________________________________________________________________
+pub const glfw  = @This();
+pub const zglfw = @This();
+// @deps std
 const std = @import("std");
-const glfw = @This();
-const c = @import("./lib/glfw.zig");
+// @deps glfw.C
+const c = @import("./C.zig");
 
 pub const String                 = [:0]const u8;
 pub const StringList             = std.ArrayList(glfw.String);
 pub const CString                = [*:0]const u8;
 pub const CStringList            = std.ArrayList(glfw.CString);
 
-pub const Window                 = c.GLFWwindow;
-pub const KeyFunc                = c.GLFWkeyfun;
 pub fn    init                   () bool { return c.glfwInit() == glfw.True; }
 pub const term                   = c.glfwTerminate;
+
+pub const Window                 = glfw.window.type;
 pub const window                 = struct {
+  pub const @"type"              = c.GLFWwindow;
   pub const hint                 = c.glfwWindowHint;
   pub const create               = c.glfwCreateWindow;
   pub const destroy              = c.glfwDestroyWindow;
   pub fn    close                (W :?*glfw.Window) bool { return c.glfwWindowShouldClose(W) == glfw.True; }
   pub const setClose             = c.glfwSetWindowShouldClose;
   pub const size                 = c.glfwGetWindowSize;
-}; //:: window
+}; //:: glfw.window
+
 pub const framebuffer            = struct {
   pub const size                 = c.glfwGetFramebufferSize;
-}; //:: framebuffer
+}; //:: glfw.framebuffer
+
+pub const Fn                     = struct {
+  pub const Key                  = c.GLFWkeyfun;
+  pub const Error                = c.GLFWerrorfun;
+  pub const Resize               = c.GLFWframebuffersizefun;
+  pub const MousePos             = c.GLFWcursorposfun;
+  pub const MouseBtn             = c.GLFWmousebuttonfun;
+  pub const MouseScroll          = c.GLFWscrollfun;
+}; //:: glfw.Fn
+
 pub const cb                     = struct {
-  pub const setResize            = c.glfwSetFramebufferSizeCallback;
-  pub const setKey               = c.glfwSetKeyCallback;
-  pub const setMousePos          = c.glfwSetCursorPosCallback;
-  pub const setMouseBtn          = c.glfwSetMouseButtonCallback;
-  pub const setMouseScroll       = c.glfwSetScrollCallback;
+  // pub fn setError2               (E :glfw.Fn.Error) void { _= c.glfwSetErrorCallback(E); }
+  pub fn setError                (E :glfw.Fn.Error) !void { if (c.glfwSetErrorCallback(E) != null) return error.glfw_cb_SetErrorFailed; }
+  pub fn setKey                  (W :?*glfw.Window, F :glfw.Fn.Key) !void { if (c.glfwSetKeyCallback(W,F) != null) return error.glfw_cb_SetKeyFailed; }
+  pub fn setResize               (W :?*glfw.Window, F :glfw.Fn.Resize) !void { if (c.glfwSetFramebufferSizeCallback(W,F) != null) return error.glfw_cb_SetResizeFailed; }
+  pub fn setMousePos             (W :?*glfw.Window, F :glfw.Fn.MousePos) !void { if (c.glfwSetCursorPosCallback(W,F) != null) return error.glfw_cb_SetMousePosFailed; }
+  pub fn setMouseBtn             (W :?*glfw.Window, F :glfw.Fn.MouseBtn) !void { if (c.glfwSetMouseButtonCallback(W,F) != null) return error.glfw_cb_SetMouseBtnFailed; }
+  pub fn setMouseScroll          (W :?*glfw.Window, F :glfw.Fn.MouseScroll) !void { if (c.glfwSetScrollCallback(W,F) != null) return error.glfw_cb_SetMouseScrollFailed; }
 }; //:: cb
 
 pub const sync                   = c.glfwPollEvents;
@@ -347,28 +364,39 @@ pub const pad                    = struct {
   }; //:: axis
 }; //:: pad
 
-pub const Api                    = c.GLFWAPI;
-pub const ClientApi              = c.GLFW_CLIENT_API;
-pub const NoApi                  = c.GLFW_NO_API;
-pub const context                = struct {
-  pub const version              = struct {
-    pub const M                  = c.GLFW_CONTEXT_VERSION_MAJOR;
-    pub const m                  = c.GLFW_CONTEXT_VERSION_MINOR;
-    pub const p                  = c.GLFW_CONTEXT_REVISION;
-  }; //:: context.version
-  pub const Robustness           = c.GLFW_CONTEXT_ROBUSTNESS;
-}; //:: context
+pub const api                    = struct {
+  pub const Hint                 = c.GLFWAPI;
+  pub const Client               = c.GLFW_CLIENT_API;
+  pub const None                 = c.GLFW_NO_API;
+};
 
 pub const opengl                 = struct {
+  pub const getProc              = c.glfwGetProcAddress;
+  pub const setVSync             = c.glfwSwapInterval;
+  pub const present              = c.glfwSwapBuffers;
   pub const Api                  = c.GLFW_OPENGL_API;
   pub const ESApi                = c.GLFW_OPENGL_ES_API;
-  pub const Any                  = c.GLFW_OPENGL_ANY_PROFILE;
-  pub const Core                 = c.GLFW_OPENGL_CORE_PROFILE;
-  pub const Compat               = c.GLFW_OPENGL_COMPAT_PROFILE;
   pub const ForwardCompat        = c.GLFW_OPENGL_FORWARD_COMPAT;
   pub const DebugContext         = c.GLFW_OPENGL_DEBUG_CONTEXT;
-  pub const Profile              = c.GLFW_OPENGL_PROFILE;
-};
+  pub const profile              = struct {
+    pub const Hint               = c.GLFW_OPENGL_PROFILE;
+    pub const Any                = c.GLFW_OPENGL_ANY_PROFILE;
+    pub const Core               = c.GLFW_OPENGL_CORE_PROFILE;
+    pub const Compat             = c.GLFW_OPENGL_COMPAT_PROFILE;
+  };
+  pub const context                = struct {
+    pub const setActive            = c.glfwMakeContextCurrent;
+    pub const version              = struct {
+      pub const M                  = c.GLFW_CONTEXT_VERSION_MAJOR;
+      pub const m                  = c.GLFW_CONTEXT_VERSION_MINOR;
+      pub const p                  = c.GLFW_CONTEXT_REVISION;
+    }; //:: context.version
+    pub const Robustness           = c.GLFW_CONTEXT_ROBUSTNESS;
+  }; //:: context
+  pub const extension            = struct {
+    pub fn supported             (name :glfw.String) bool { return c.glfwExtensionSupported(name.ptr) == glfw.True; }
+  };
+}; //:: glfw.opengl
 
 pub const vk                     = struct {
   pub fn supported               () bool { return c.glfwVulkanSupported() == glfw.True; }

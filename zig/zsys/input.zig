@@ -1,23 +1,23 @@
-//:___________________________________________________________________
-//  zsys  |  Copyright (C) Ivan Mar (sOkam!)  |  GNU GPLv3 or later  :
-//:___________________________________________________________________
-// External dependencies
+//:____________________________________________________________________
+//  zsys  |  Copyright (C) Ivan Mar (sOkam!)  |  GNU LGPLv3 or later  :
+//:____________________________________________________________________
+pub const Input = @This();
+// @deps zdk
 const glfw = @import("../zglfw.zig");
 // z*sys dependencies
 const cb   = @import("./cb.zig");
 const w    = @import("./window.zig");
 
-pub const Input = struct {
-  _:void=undefined,
-  pub fn update(I :*Input) void {_=I; glfw.sync(); }
+_:void=undefined,
 
-  pub fn init (win :*w.Window) Input {
-    // Input
-    _ = glfw.cb.setKey(win.ct, cb.key);
-    _ = glfw.cb.setMouseBtn(win.ct, null);
-    _ = glfw.cb.setMousePos(win.ct, null);
-    _ = glfw.cb.setMouseScroll(win.ct, null);
-    return Input{};
-  } //:: zsys.Input.init
-}; //:: zsys.Input
+pub fn update (I :*const Input) void {_=I; glfw.sync(); }
+
+pub fn init (win :*const w.Window) !Input {
+  // Input
+  try glfw.cb.setKey(win.ct, cb.key);
+  try glfw.cb.setMouseBtn(win.ct, null);
+  try glfw.cb.setMousePos(win.ct, null);
+  try glfw.cb.setMouseScroll(win.ct, null);
+  return Input{};
+} //:: zsys.Input.init
 
