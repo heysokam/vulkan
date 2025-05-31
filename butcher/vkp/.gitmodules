@@ -1,0 +1,3 @@
+[submodule "src/lib/cendk"]
+	path = src/lib/cendk
+	url = https://github.com/heysokam/cendk
